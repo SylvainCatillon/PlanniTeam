@@ -123,3 +123,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# User substitution
+# https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#auth-custom-user
+
+AUTH_USER_MODEL = 'accounts.User'

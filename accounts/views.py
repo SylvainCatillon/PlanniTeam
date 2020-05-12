@@ -13,9 +13,9 @@ class CreateView(FormView):
         # This method is called when valid form data has been POSTed.
         # It should return an HttpResponse.
         form.save()
-        username = form.cleaned_data["username"]
+        email = form.cleaned_data["email"]
         password = form.cleaned_data["password1"]
-        user = authenticate(self.request, username=username, password=password)
+        user = authenticate(self.request, email=email, password=password)
         if user:
             login(self.request, user)
         return super().form_valid(form)
