@@ -9,6 +9,7 @@ env:
   global:
     - MOZ_HEADLESS=1
     - DJANGO_SETTINGS_MODULE='PlanniTeam.settings.travis'
+    - SECRET_KEY='dhj4f6d^1pk$ufqj#!oere!3t3j4@$g*60&j)zn4i_y+0yi7dl'
 
 services:
   - postgresql
