@@ -2,35 +2,32 @@
 {% block content %}
 {% if form.errors %}
 {% for error in form.errors.values %}
-<p >{{ error }}</p>
+  <p >{{ error }}</p>
 {% endfor %}
 {% endif %}
 
 {% if next %}
-    {% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-    {% else %}
-    <p>Please login to see this page.</p>
-    {% endif %}
+  {% if user.is_authenticated %}
+    <p>Vous n'avez pas accès à cette page. Veuillez vous connecter avec un compte autorisé</p>
+  {% else %}
+    <p>Veuillez vous connecter pour accéder à cette page</p>
+  {% endif %}
 {% endif %}
 {% if user.is_authenticated %}
-<p>Authentifié</p>
+<p>Vous êtes déjà connecté</p>
 {% else %}
-<p>Non authentifié</p>
-{% endif %}
-<form method="post" action="{% url 'accounts:login' %}">
-{% csrf_token %}
-<table>
-{%  for field in form %}
-<tr>
+  <form method="post" action="{% url 'accounts:login' %}">
+  {% csrf_token %}
+  <table>
+  {%  for field in form %}
+  <tr>
     <td>{{ field.label_tag }}</td>
     <td>{{ field }}</td>
-</tr>
-{%  endfor %}
-</table>
-
-<input type="submit" value="login">
-<input type="hidden" name="next" value="{{ next }}">
-</form>
+  </tr>
+  {%  endfor %}
+  </table>
+  <input type="submit" value="login">
+  <input type="hidden" name="next" value="{{ next }}">
+  </form>
+{% endif %}
 {%  endblock %}

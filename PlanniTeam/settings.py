@@ -31,13 +31,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'accounts.apps.AccountsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +128,7 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.0/topics/auth/customizing/#auth-custom-user
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# Url to redirect to after logout
+
+LOGOUT_REDIRECT_URL = '/accounts/login'

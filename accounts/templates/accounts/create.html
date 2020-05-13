@@ -1,17 +1,17 @@
 {% extends "accounts/base.html" %}
 {%  block content %}
-    <form method="post" action="{% url 'accounts:create' %}">
-{% csrf_token %}
-<table>
-{% for field in form %}
-<tr>
+  <form method="post" action="{% url 'accounts:create' %}">
+  {% csrf_token %}
+  {% for field in form %}
+  <table>
+  <tr>
     <td>{{ field.errors }}</td>
     <td>{{ field.label_tag }}</td>
     <td>{{ field }}</td>
-</tr>
-</table>
+  </tr>
+  </table>
 {%  endfor %}
 
-<input type="submit" value="create">
+<input type="submit" value="créer">
 </form>
 {% endblock %}
