@@ -1,0 +1,27 @@
+language: python
+python:
+  - '3.7'
+
+before_script:
+  - pip install -r requirements.txt
+
+env:
+  global:
+    - MOZ_HEADLESS=1
+    - DJANGO_SETTINGS_MODULE='PlanniTeam.settings.travis'
+
+services:
+  - postgresql
+
+script:
+  - python ./manage.py test
+
+addons:
+  firefox: latest
+  apt:
+    packages:
+      firefox-geckodriver
+
+branches:
+  only:
+    - master
