@@ -1,0 +1,17 @@
+{% extends "accounts/base.html" %}
+{%  block content %}
+  <form method="post" action="{% url 'accounts:create' %}">
+  {% csrf_token %}
+  {% for field in form %}
+  <table>
+  <tr>
+    <td>{{ field.errors }}</td>
+    <td>{{ field.label_tag }}</td>
+    <td>{{ field }}</td>
+  </tr>
+  </table>
+{%  endfor %}
+
+<input type="submit" value="créer">
+</form>
+{% endblock %}
