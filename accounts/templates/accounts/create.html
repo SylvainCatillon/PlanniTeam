@@ -1,17 +1,20 @@
 {% extends "core/base.html" %}
 {%  block content %}
+  <div class="container">
+  <div class="row">
+  <div class="col text-center mt-3">
   <form method="post" action="{% url 'accounts:create' %}">
   {% csrf_token %}
   {% for field in form %}
-  <table>
-  <tr>
-    <td>{{ field.errors }}</td>
-    <td>{{ field.label_tag }}</td>
-    <td>{{ field }}</td>
-  </tr>
-  </table>
-{%  endfor %}
-
-<input type="submit" value="créer">
-</form>
+  <div class="form-group">
+    <div class="bg-danger">{{ field.errors }}</div>
+    <div>{{ field.label_tag }}</div>
+    <div>{{ field }}</div>
+  </div>
+  {%  endfor %}
+  <input class="btn btn-dark" type="submit" value="créer">
+  </form>
+  </div>
+  </div>
+  </div>
 {% endblock %}
