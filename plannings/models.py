@@ -15,10 +15,11 @@ class Planning(EncryptedIDModel):
     guest_mails = models.ManyToManyField(GuestMail)
 
 
-# class Event(models.Model):
-#     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
-#     date = models.DateField()
-#     description = models.TextField(blank=True)
-#     address = models.CharField(max_length=300, blank=True)
+class Event(models.Model):
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.TimeField(blank=True, null=True)
+    description = models.TextField(blank=True)
+    address = models.CharField(max_length=300, blank=True)
 #     participations = models.ManyToManyField(User, through='Participation')
 
