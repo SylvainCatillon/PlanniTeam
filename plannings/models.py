@@ -9,7 +9,8 @@ class GuestMail(models.Model):
 
 
 class Planning(EncryptedIDModel):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name='planning_created')
     name = models.CharField(max_length=200)
     protected = models.BooleanField(default=False)
     guest_mails = models.ManyToManyField(GuestMail)

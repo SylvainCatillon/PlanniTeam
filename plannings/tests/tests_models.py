@@ -6,13 +6,12 @@ from plannings.models import Planning, Event
 
 
 class PlanningTestCase(TestCase):
+    fixtures = ['users']
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(
-            email='creator@test.com',
-            password='test_password')
+        cls.user = User.objects.get(first_name='Creator')
 
     def test_unprotected_planning_creation(self):
         planning = Planning.objects.create(creator=self.user, name='Test')
@@ -30,34 +29,31 @@ class PlanningTestCase(TestCase):
 
 
 class EventTestCase(TestCase):
+    fixtures = ['users']
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        user = User.objects.create_user(
-            email='creator@test.com',
-            password='test_password')
+        user = User.objects.get(first_name='Creator')
         cls.planning = Planning.objects.create(creator=user, name='Test')
 
     def test_less_info_event_creation(self):
-        event_date = date(2020, 12, 8)
-        event = Event.objects.create(planning=self.planning,
-                                     date=event_date)
+        event_params = dict(
+            planning=self.planning,
+            date=date(2020, 12, 8))
+        event = Event.objects.create(**event_params)
         self.assertIsInstance(event, Event)
-        self.assertEqual(event_date, event.date)
+        for key, value in event_params.items():
+            self.assertEqual(getattr(event, key), value)
 
     def test_more_info_event_creation(self):
-        event_date = date(2020, 12, 8)
-        event_time = time(18, 30)
-        description = "Ceci est la description de l'événement"
-        address = "15 rue Michel Drucker, 75003 Paris"
-        event = Event.objects.create(planning=self.planning,
-                                     date=event_date,
-                                     time=event_time,
-                                     description=description,
-                                     address=address)
+        event_params = dict(
+            planning=self.planning,
+            date=date(2020, 12, 8),
+            time=time(18, 30),
+            description="Ceci est la description de l'événement",
+            address="15 rue Michel Drucker, 75003 Paris")
+        event = Event.objects.create(**event_params)
         self.assertIsInstance(event, Event)
-        self.assertEqual(event.description, description)
-        self.assertEqual(event.address, address)
-        self.assertEqual(event_date, event.date)
-        self.assertEqual(event_time, event.time)
+        for key, value in event_params.items():
+            self.assertEqual(getattr(event, key), value)
