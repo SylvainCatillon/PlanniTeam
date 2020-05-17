@@ -1,4 +1,46 @@
 {% extends 'core/base.html' %}
 {% block content %}
   <p>Hello world</p>
+  <form id="planning_form" method="post" action="{% url 'plannings:create' %}">{% csrf_token %}
+    {{ form.as_p }}
+  <input hidden value="{{ user.id }}" name="creator_id">
+  </form>
+  <select id="guests_mail_select" multiple></select>
+  <form id="guest_mails_form">
+  <label for="guest_email">Ajouter un Email</label>
+  <input type="email" id="guest_mail" name="guest_mail">
+  <input type="submit" value="Ajouter">
+  </form>
+  <input type="submit" form="planning_form" value="Envoyer">
+{#  <button id="guest_mails_form">Ajouter</button> #}
+{#  <button id="submit_planning_form">Envoyer</button>#}
 {% endblock %}
+{% block js %}
+  {{ block.super }}
+  <script type="text/javascript">
+  $(function () {
+      const planning_form = $('#planning_form')
+
+      $('#guest_mails_form').on('submit', function (event) {
+          event.preventDefault()
+          event.stopPropagation()
+          let $form = $(this),
+              data = $form.serializeArray(),
+              mail = data.reduce(function(obj, item) { obj[item.name] = item.value; return obj;}, {} )['guest_mail']
+          $('#guests_mail_select').append($('<option></option>', {value: mail, text: mail}))
+          planning_form.append($('<input>', {value: mail, hidden: true, name: 'guest_mail'}))
+          $form.trigger('reset')
+
+      })
+
+      planning_form.on('submit', function (event) {
+        let $form = $( this ),
+          data = $form.serialize(),
+          url = $form.attr("action");
+
+        $.post(url, data);
+
+      })
+  })
+  </script>
+{%  endblock %}
