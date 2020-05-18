@@ -4,8 +4,11 @@ from encrypted_id.models import EncryptedIDModel
 from accounts.models import User
 
 
-class GuestMail(models.Model):
-    mail = models.EmailField()
+class GuestEmail(models.Model):
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.email
 
 
 class Planning(EncryptedIDModel):
@@ -13,7 +16,10 @@ class Planning(EncryptedIDModel):
                                 related_name='planning_created')
     name = models.CharField(max_length=200)
     protected = models.BooleanField(default=False)
-    guest_mails = models.ManyToManyField(GuestMail)
+    guest_emails = models.ManyToManyField(GuestEmail)
+
+    def __str__(self):
+        return f"Planning {self.name} by {self.creator.email}"
 
 
 class Event(models.Model):

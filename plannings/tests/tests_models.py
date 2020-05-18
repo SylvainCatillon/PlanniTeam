@@ -21,11 +21,11 @@ class PlanningTestCase(TestCase):
     def test_protected_planning_creation(self):
         planning = Planning.objects.create(creator=self.user, name='Test',
                                            protected=True)
-        guest_mail = 'guest@test.com'
-        planning.guest_mails.create(mail=guest_mail)
+        guest_email = 'guest@test.com'
+        planning.guest_emails.create(email=guest_email)
         self.assertIsInstance(planning, Planning)
         self.assertTrue(planning.protected)
-        self.assertEqual(planning.guest_mails.all()[0].mail, guest_mail)
+        self.assertEqual(planning.guest_emails.all()[0].email, guest_email)
 
 
 class EventTestCase(TestCase):

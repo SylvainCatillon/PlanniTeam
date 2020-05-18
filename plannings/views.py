@@ -5,7 +5,7 @@ from django.urls import reverse
 
 
 from plannings.forms import PlanningCreationForm
-from plannings.models import GuestMail
+from plannings.models import GuestEmail
 
 
 @login_required
@@ -15,14 +15,14 @@ def create_planning(request):
         if form.is_valid():
             planning = form.save()
             if planning.protected:
-                guest_mails = request.POST.getlist('guest_mail')
-                for mail in guest_mails:
+                guest_emails = request.POST.getlist('guest_email')
+                for email in guest_emails:
                     try:
-                        planning.guest_mails.add(GuestMail.objects.get(mail=mail))
-                    except GuestMail.DoesNotExist:
-                        planning.guest_mails.create(mail=mail)
+                        planning.guest_emails.add(GuestEmail.objects.get(email=email))
+                    except GuestEmail.DoesNotExist:
+                        planning.guest_emails.create(email=email)
             return HttpResponseRedirect(reverse(
-                'plannings:created',kwargs={'planning_ekey': planning.ekey}))
+                'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:
         form = PlanningCreationForm(initial={'creator': request.user.pk})
     return render(request, 'plannings/create_planning.html', {'form': form})

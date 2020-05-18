@@ -48,21 +48,34 @@ class PlanningCreationViewTest(TestCase):
                                     {'name': name, 'creator': self.user.pk})
         planning = Planning.objects.get(name=name)
         self.assertIn(planning, self.user.planning_created.all())
+        self.assertFalse(planning.protected)
+        self.assertRedirects(response, reverse('plannings:created', kwargs={
+            'planning_ekey': planning.ekey}))
+
+    def test_create_protected_planning_without_guests(self):
+        name = 'Test'
+        response = self.client.post(
+            reverse('plannings:create'),
+            {'name': name, 'creator': self.user.pk, 'protected': True})
+        planning = Planning.objects.get(name=name)
+        self.assertIn(planning, self.user.planning_created.all())
+        self.assertTrue(planning.protected)
+        self.assertQuerysetEqual(planning.guest_emails.all(), [])
         self.assertRedirects(response, reverse('plannings:created', kwargs={
             'planning_ekey': planning.ekey}))
 
     def test_create_planning_with_guests(self):
-        guest_mails = ["participant@test.com",
-                       "participant2@test.com",
-                       "participant3@test.com"]
-        params = {'name': 'Test', 'protected': True, 'guest_mail': guest_mails,
-                  'creator': self.user.pk}
+        guest_emails = ["participant@test.com",
+                        "participant2@test.com",
+                        "participant3@test.com"]
+        params = {'name': 'Test', 'protected': True,
+                  'guest_email': guest_emails, 'creator': self.user.pk}
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
         self.assertRedirects(response, reverse('plannings:created', kwargs={
             'planning_ekey': planning.ekey}))
-        self.assertEqual(params.pop('guest_mail'),
-                         [e.mail for e in planning.guest_mails.all()])
+        self.assertEqual(params.pop('guest_email'),
+                         [e.email for e in planning.guest_emails.all()])
         self.assertEqual(params.pop('creator'), planning.creator.pk)
         for key, value in params.items():
             self.assertEqual(getattr(planning, key), value)
@@ -74,4 +87,4 @@ class PlanningCreationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'creator', _(
             'Select a valid choice. That choice is not one of the available '
-            'choices.')) 
+            'choices.'))
