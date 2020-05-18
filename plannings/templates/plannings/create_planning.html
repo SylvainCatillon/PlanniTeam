@@ -3,7 +3,6 @@
   <p>Hello world</p>
   <form id="planning_form" method="post" action="{% url 'plannings:create' %}">{% csrf_token %}
     {{ form.as_p }}
-  <input hidden value="{{ user.id }}" name="creator_id">
   </form>
   <select id="guests_mail_select" multiple></select>
   <form id="guest_mails_form">

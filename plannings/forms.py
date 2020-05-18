@@ -10,4 +10,5 @@ class PlanningCreationForm(forms.ModelForm):
 
     class Meta:
         model = Planning
-        fields = ['name', 'protected']
+        widgets = {'creator': forms.HiddenInput(), }
+        fields = ['name', 'protected', 'creator']
