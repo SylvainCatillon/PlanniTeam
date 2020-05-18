@@ -4,40 +4,74 @@
   <form id="planning_form" method="post" action="{% url 'plannings:create' %}">{% csrf_token %}
     {{ form.as_p }}
   </form>
-  <select id="guests_email_select" multiple></select>
-  <form id="guest_emails_form">
-  <label for="guest_email">Ajouter un Email</label>
-  <input type="email" id="guest_email" name="guest_email">
-  <input type="submit" value="Ajouter">
-  </form>
+  <div id="guests_container" style="display: none">
+    <label for="guests_email_select">Emails sélectionnés</label>
+    <form id="guests_select_form">
+      <select id="guests_email_select" name="emails_to_delete" multiple style="min-width: 200px"></select>
+      <input type="submit" value="Supprimer">
+    </form>
+    <form id="guest_emails_form">
+      <label for="guest_email">Ajouter un Email</label>
+      <input type="email" id="guest_email" name="add_guest_email">
+      <input type="submit" value="Ajouter">
+    </form>
+  </div>
   <input type="submit" form="planning_form" value="Envoyer">
 {% endblock %}
 {% block js %}
   {{ block.super }}
   <script type="text/javascript">
   $(function () {
-      const planning_form = $('#planning_form')
+      const $planning_form = $('#planning_form')
+      const $guests_container = $('#guests_container')
 
+      /*
+      Show the options to choose guests only if input 'protected' is checked
+      */
+      $('#id_protected').on('click', function (event) {
+        if (this.checked) {
+            $guests_container.show()
+        } else {
+            $guests_container.hide()
+        }
+      })
+
+      /*
+      When the guest email input is submitted:
+      -check if the guest's email is already added
+      -add an option with the email as value to the guest's email select elem
+      -add a hidden input with the guest's email as value
+       */
       $('#guest_emails_form').on('submit', function (event) {
           event.preventDefault()
           event.stopPropagation()
           let $form = $(this),
               data = $form.serializeArray(),
-              email = data.reduce(function(obj, item) { obj[item.name] = item.value; return obj;}, {} )['guest_email']
-          $('#guests_email_select').append($('<option></option>', {value: email, text: email}))
-          planning_form.append($('<input>', {value: email, hidden: true, name: 'guest_email'}))
-          $form.trigger('reset')
-
+              email = data.reduce(function(obj, item) { obj[item.name] = item.value; return obj;}, {} )['add_guest_email']
+          let $guests_select = $('#guests_email_select')
+          if ($guests_select.text().includes(email)) {
+              alert('Vous avez déjà indiqué cette adresse')
+          } else {
+            $guests_select.append($('<option></option>', {value: email, text: email}))
+            $planning_form.append($('<input>', {value: email, hidden: true, name: 'guest_email'}))
+          } $form.trigger('reset')
       })
 
-      planning_form.on('submit', function (event) {
-        let $form = $( this ),
-          data = $form.serialize(),
-          url = $form.attr("action");
-
-        $.post(url, data);
-
+      /*
+      For each selected guest email option:
+      -Remove the associate hidden input
+      -Remove the option
+       */
+      $('#guests_select_form').on('submit', function (event) {
+          event.preventDefault()
+          event.stopPropagation()
+          let data = $(this).serializeArray()
+          $.each(data, function (i, field) {
+            $('option[value="'+field.value+'"]').remove()
+            $('input[name="guest_email"][value="'+field.value+'"]').remove()
+          })
       })
+
   })
   </script>
 {%  endblock %}
