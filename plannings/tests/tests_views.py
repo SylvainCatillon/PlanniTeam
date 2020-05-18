@@ -1,9 +1,11 @@
+from urllib.parse import quote, unquote
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
-from plannings.models import Planning
+from plannings.models import Planning, Event
 
 
 class PlanningCreationViewTest(TestCase):
@@ -39,7 +41,7 @@ class PlanningCreationViewTest(TestCase):
     def test_form_user_in_initial_data(self):
         response = self.client.get(reverse('plannings:create'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['form'].initial['creator'],
+        self.assertEqual(response.context['planning_form'].initial['creator'],
                          self.user.pk)
 
     def test_create_minimal_planning(self):
@@ -85,6 +87,35 @@ class PlanningCreationViewTest(TestCase):
         response = self.client.post(reverse('plannings:create'),
                                     {'name': name, 'creator': 0})
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'creator', _(
+        self.assertFormError(response, 'planning_form', 'creator', _(
             'Select a valid choice. That choice is not one of the available '
             'choices.'))
+
+    def test_create_with_event(self):
+        event_dict = [
+            {'date': '2020-12-05', 'time': '', 'description': '', 'address': ''},
+            {'date': '2020-12-06', 'time': quote('18:05:00'), 'description': '',
+             'address': ''},
+            {'date': '2020-12-07', 'time': quote('18:30:00'),
+             'description': 'bdmazbdoazh%3Dzakjdgazdg%26bgosgfpo%3Dazkjdgapzidgamzdg%C3%A2o',
+             'address': ''},
+            {'date': '2020-12-08', 'time': quote('20:00:00'), 'description': quote('This%20is%20description'),
+             'address': quote('2%20boulevard%20something')}
+        ]
+        event_list = ["&".join("=".join(itms) for itms in d.items()) for d in event_dict]
+        params = {'name': 'Test', 'event': event_list, 'creator': self.user.pk}
+        response = self.client.post(reverse('plannings:create'), params)
+        planning = Planning.objects.get(name=params['name'])
+        self.assertRedirects(response, reverse('plannings:created', kwargs={
+            'planning_ekey': planning.ekey}))
+        self.assertEqual(params.get('creator'), planning.creator.pk)
+        self.assertEqual(params.get('name'), planning.name)
+        created_events = Event.objects.filter(planning=planning)
+        for event in event_dict:
+            created_event = created_events.get(date=event['date'])
+            for key, value in event.items():
+                if value and key != 'date':
+                    if key == 'time':
+                        self.assertEqual(str(created_event.time), unquote(value))
+                    else:
+                        self.assertEqual(getattr(created_event, key), unquote(value))

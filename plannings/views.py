@@ -3,17 +3,19 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
+from urllib.parse import unquote
 
-from plannings.forms import PlanningCreationForm
-from plannings.models import GuestEmail
+
+from plannings.forms import PlanningCreationForm, EventCreationForm
+from plannings.models import GuestEmail, Event
 
 
 @login_required
 def create_planning(request):
     if request.method == 'POST':
-        form = PlanningCreationForm(request.POST)
-        if form.is_valid():
-            planning = form.save()
+        planning_form = PlanningCreationForm(request.POST)
+        if planning_form.is_valid():
+            planning = planning_form.save()
             if planning.protected:
                 guest_emails = request.POST.getlist('guest_email')
                 for email in guest_emails:
@@ -21,11 +23,22 @@ def create_planning(request):
                         planning.guest_emails.add(GuestEmail.objects.get(email=email))
                     except GuestEmail.DoesNotExist:
                         planning.guest_emails.create(email=email)
+            events = request.POST.getlist('event')
+            for event_string in events:
+                event_args = {'planning': planning}
+                for arg in event_string.split('&'):
+                    key, value = arg.split('=')
+                    if value:
+                        event_args[key] = unquote(value)
+                # with atomic? ou seulement quand on enchaine les create? mais je suis dans une boucle for...
+                Event.objects.create(**event_args)
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:
-        form = PlanningCreationForm(initial={'creator': request.user.pk})
-    return render(request, 'plannings/create_planning.html', {'form': form})
+        planning_form = PlanningCreationForm(initial={'creator': request.user.pk})
+    event_form = EventCreationForm()
+    context = {'planning_form': planning_form, 'event_form': event_form}
+    return render(request, 'plannings/create_planning.html', context)
 
 
 def planning_created(request, planning_ekey): # Remplacer par TemplateView en créant link dans create??

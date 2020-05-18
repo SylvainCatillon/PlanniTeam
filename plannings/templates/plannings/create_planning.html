@@ -1,22 +1,25 @@
 {% extends 'core/base.html' %}
 {% block content %}
-  <p>Hello world</p>
   <form id="planning_form" method="post" action="{% url 'plannings:create' %}">{% csrf_token %}
-    {{ form.as_p }}
+    {{ planning_form.as_p }}
   </form>
   <div id="guests_container" style="display: none">
-    <label for="guests_email_select">Emails sélectionnés</label>
-    <form id="guests_select_form">
-      <select id="guests_email_select" name="emails_to_delete" multiple style="min-width: 200px"></select>
-      <input type="submit" value="Supprimer">
-    </form>
     <form id="guest_emails_form">
       <label for="guest_email">Ajouter un Email</label>
       <input type="email" id="guest_email" name="add_guest_email">
       <input type="submit" value="Ajouter">
     </form>
+    <form id="guests_select_form">
+      <label for="guests_email_select">Emails sélectionnés</label>
+      <select id="guests_email_select" name="emails_to_delete" multiple style="min-width: 200px"></select>
+      <input type="submit" value="Supprimer">
+    </form>
   </div>
   <input type="submit" form="planning_form" value="Envoyer">
+  <form id="event_form">
+    {{ event_form.as_p }}
+    <input type="submit" value="Ajouter">
+  </form>
 {% endblock %}
 {% block js %}
   {{ block.super }}
@@ -72,6 +75,33 @@
           })
       })
 
+
+      /*
+      Add to planning_form a hidden input with the data of the event_form when submitted
+       */
+      $('#event_form').on('submit', function (event) {
+          event.preventDefault()
+          event.stopPropagation()
+          let data = $(this).serialize(),
+              input = $('<input>', {value: data, type: 'hidden', name: 'event'})
+          $('#planning_form').append(input)
+      })
+
+
+      {#$planning_form.on('submit', function (event) {#}
+      {#    event.preventDefault()#}
+      {#    event.stopPropagation()#}
+      {#    let $form = $( this ),#}
+      {#      data = $form.serializeArray(),#}
+      {#      url = $form.attr("action"),#}
+      {#      event_data = $('#test_data').data();#}
+          {#console.log(data)#}
+          {#$.merge(data,event_data)#}
+          {#console.log(data+event_data)#}
+      {##}
+      {#    $.post(url, data+event_data);#}
+{##}
+{#      })#}
   })
   </script>
 {%  endblock %}
