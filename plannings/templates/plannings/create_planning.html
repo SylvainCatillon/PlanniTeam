@@ -17,11 +17,26 @@
     </form>
   </div>
   <input type="submit" form="planning_form" value="Envoyer">
-  <form id="event_form" action="{% url 'plannings:check_event' %}">
+  <button class="btn btn-primary mt-3 dropdown-toggle dropdownButton" id="dropdownButton" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false"></button>
+  <form class="dropdown-menu" id="event_form" action="{% url 'plannings:check_event' %}" aria-labelledby="dropdownButton">
     {% csrf_token %}
-    {{ event_form.as_p }}
+    {% for field in event_form %}
+        <div class="form-group pt-2 pt-lg-4">
+            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
+            <div class="font-bold h5">{{ field.label_tag }}</div>
+            {{ field }}
+            {% if field.help_text %}
+            <div class="font-italic">{{ field.help_text|safe }}</div>
+            {% endif %}
+        </div>
+      {% endfor %}
     <input type="submit" value="Ajouter">
   </form>
+  <div id="created_event_container" hidden>
+    {% for field in event_form %}
+        <div class="" js-event-field="{{ field.name }}"></div>
+      {% endfor %}
+  </div>
 {% endblock %}
 {% block js %}
   {{ block.super }}
@@ -79,7 +94,6 @@
 
 
       /*
-      Add to planning_form a hidden input with the data of the event_form when submitted
        */
       $('#event_form').on('submit', function (event) {
           event.preventDefault()
@@ -87,14 +101,38 @@
           let $form = $(this),
               url = $form.attr('action'),
               data = $form.serialize()
+          $('ul[js-error-field] li').each(function (i, error) {
+              error.remove()
+          })
 
           $.post(url, data)
             .done(function(data) {
-              console.log(data)
-              console.log(typeof(data))
-                let input = $('<input>', {value: data, type: 'hidden', name: 'event'})
-              $('#planning_form').append(input)
+                let input = $('<input>', {value: JSON.stringify(data), type: 'hidden', name: 'event'})
+                $('#planning_form').append(input)
+                let $div = $('#created_event_container').clone()
+                $div.children().each(function (i, elem) {
+                    let $elem = $(elem)
+                    {#console.log($elem.attr('js-event-field'))#}
+                    $elem.text(data[$elem.attr('js-event-field')])
+
+                });
+                $div.attr('hidden', null)
+                console.log($div.html())
+                $('body').append($div)
+                {#$('#planning_form').append($div)#}
+            })
+            .fail(function (jqXHR) {
+                if (jqXHR.status === 422) {
+                    let errors = JSON.parse(jqXHR.responseText)
+                    for (let key in errors) {
+                        let $div = $('ul[js-error-field="'+key+'"]')
+                        for (let error in errors[key]) {
+                            $div.append($('<li>'+errors[key]+'</li>'))
+                        }
+                    }
+                }
             });
+          $form.trigger('reset')
 
       })
 

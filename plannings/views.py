@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
+from django.forms import model_to_dict
 from django.http import HttpResponseRedirect, HttpResponse, Http404, \
     JsonResponse
 from django.shortcuts import render
@@ -31,7 +32,7 @@ def create_planning(request):
                         planning.guest_emails.create(email=email)
             events = request.POST.getlist('event')
             for event in events:
-                planning.event_set.create(**json.loads(event)[0]['fields'])
+                planning.event_set.create(**json.loads(event))
             # for event_string in events:
             #     event_args = {'planning': planning}
             #     for arg in event_string.split('&'):
@@ -49,15 +50,14 @@ def create_planning(request):
 
 
 def check_event(request):
-    if request.method == 'POST':
+    if request.method == 'POST': # is POST the good method?
         form = EventCreationForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)
-            if event:
-                data = serializers.serialize('json', [event])
-                return HttpResponse(data)
+            if event: # verification inutile, suite à form.is_valid?
+                return JsonResponse(model_to_dict(event))
         else:
-            return JsonResponse(form.errors, status=400)  # Change Http error code. 422??
+            return JsonResponse(form.errors, status=422)  # Change Http error code. 422 ou 400?
     raise Http404('No Get on this page')  # Change error message
 
 

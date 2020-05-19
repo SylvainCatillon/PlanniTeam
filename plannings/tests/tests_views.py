@@ -117,7 +117,7 @@ class PlanningCreationViewTest(TestCase):
         response = self.client.post(reverse('plannings:check_event'),
                                     event_args) # is post the good method?
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)[0]['fields']
+        data = json.loads(response.content)
         for key, value in event_args.items():
             self.assertEqual(data[key], value)
 
