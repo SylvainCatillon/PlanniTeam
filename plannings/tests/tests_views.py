@@ -1,4 +1,4 @@
-from urllib.parse import quote, unquote
+from urllib.parse import quote, urlencode
 
 from django.test import TestCase
 from django.urls import reverse
@@ -38,11 +38,20 @@ class PlanningCreationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'plannings/create_planning.html')
 
-    def test_form_user_in_initial_data(self):
+    def test_user_in_initial_form_data(self):
         response = self.client.get(reverse('plannings:create'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['planning_form'].initial['creator'],
                          self.user.pk)
+
+    def test_create_fake_user(self):
+        name = 'Test'
+        response = self.client.post(reverse('plannings:create'),
+                                    {'name': name, 'creator': 0})
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response, 'planning_form', 'creator', _(
+            'Select a valid choice. That choice is not one of the available '
+            'choices.'))
 
     def test_create_minimal_planning(self):
         name = 'Test'
@@ -74,48 +83,96 @@ class PlanningCreationViewTest(TestCase):
                   'guest_email': guest_emails, 'creator': self.user.pk}
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
+
+        # The user is redirected to a success page
         self.assertRedirects(response, reverse('plannings:created', kwargs={
             'planning_ekey': planning.ekey}))
-        self.assertEqual(params.pop('guest_email'),
-                         [e.email for e in planning.guest_emails.all()])
-        self.assertEqual(params.pop('creator'), planning.creator.pk)
-        for key, value in params.items():
-            self.assertEqual(getattr(planning, key), value)
 
-    def test_create_not_logged_user(self):
-        name = 'Test'
-        response = self.client.post(reverse('plannings:create'),
-                                    {'name': name, 'creator': 0})
-        self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'planning_form', 'creator', _(
-            'Select a valid choice. That choice is not one of the available '
-            'choices.'))
+        # The planning has all the wanted attributes
+        self.assertTrue(planning.protected)
+        self.assertEqual(params['guest_email'],
+                         [e.email for e in planning.guest_emails.all()])
+        self.assertEqual(params['creator'], planning.creator.pk)
 
     def test_create_with_event(self):
         event_dict = [
             {'date': '2020-12-05', 'time': '', 'description': '', 'address': ''},
-            {'date': '2020-12-06', 'time': quote('18:05:00'), 'description': '',
+            {'date': '2020-12-06', 'time': '18:05:00', 'description': '',
              'address': ''},
-            {'date': '2020-12-07', 'time': quote('18:30:00'),
-             'description': 'bdmazbdoazh%3Dzakjdgazdg%26bgosgfpo%3Dazkjdgapzidgamzdg%C3%A2o',
+            {'date': '2020-12-07', 'time': '18:30:00',
+             'description': 'A pretty long description with specials '
+                                  'char as = and & and # or è, é, %, ?!, *,'
+                                  '$,},@,+256...',
              'address': ''},
-            {'date': '2020-12-08', 'time': quote('20:00:00'), 'description': quote('This%20is%20description'),
-             'address': quote('2%20boulevard%20something')}
+            {'date': '2020-12-08', 'time': '20:00:00',
+             'description': 'This%20is%20description',
+             'address': '2%20boulevard%20something'}
         ]
-        event_list = ["&".join("=".join(itms) for itms in d.items()) for d in event_dict]
+        # use urllib.encode to escape char
+        event_list = [urlencode(d, quote_via=quote) for d in event_dict]
         params = {'name': 'Test', 'event': event_list, 'creator': self.user.pk}
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
+
+        # The user is redirected to a success page
         self.assertRedirects(response, reverse('plannings:created', kwargs={
             'planning_ekey': planning.ekey}))
+
+        # The planning has all the wanted attributes
         self.assertEqual(params.get('creator'), planning.creator.pk)
-        self.assertEqual(params.get('name'), planning.name)
         created_events = Event.objects.filter(planning=planning)
         for event in event_dict:
             created_event = created_events.get(date=event['date'])
             for key, value in event.items():
                 if value and key != 'date':
                     if key == 'time':
-                        self.assertEqual(str(created_event.time), unquote(value))
+                        # Convert to string the datetime object in Event.time
+                        self.assertEqual(str(created_event.time),
+                                         value)
                     else:
-                        self.assertEqual(getattr(created_event, key), unquote(value))
+                        self.assertEqual(getattr(created_event, key),
+                                         value)
+
+    def test_create_with_event_and_guests(self):
+        event_dict = [
+            {'date': '2020-12-05', 'time': '', 'description': '',
+             'address': ''},
+            {'date': '2020-12-06', 'time': '18:05:00', 'description': '',
+             'address': ''},
+            {'date': '2020-12-07', 'time': '18:30:00',
+             'description': 'A pretty long description with specials '
+                            'char as = and & and # or è, é, %, ?!, *,'
+                            '$,},@,+256...',
+             'address': ''},
+            {'date': '2020-12-08', 'time': '20:00:00',
+             'description': 'This%20is%20description',
+             'address': '2%20boulevard%20something'}
+        ]
+        # use urllib.encode to escape char
+        event_list = [urlencode(d, quote_via=quote) for d in event_dict]
+        guest_emails = ["participant@test.com",
+                        "participant2@test.com",
+                        "participant3@test.com"]
+        params = {'name': 'Test', 'event': event_list, 'creator': self.user.pk,
+                  'protected': True, 'guest_email': guest_emails}
+        response = self.client.post(reverse('plannings:create'), params)
+        planning = Planning.objects.get(name=params['name'])
+
+        # The user is redirected to a success page
+        self.assertRedirects(response, reverse('plannings:created', kwargs={
+            'planning_ekey': planning.ekey}))
+
+        # The planning has all the wanted attributes
+        self.assertEqual(params.get('creator'), planning.creator.pk)
+        self.assertTrue(planning.protected)
+        self.assertEqual(params['guest_email'],
+                         [e.email for e in planning.guest_emails.all()])
+        created_events = Event.objects.filter(planning=planning)
+        for event in event_dict:
+            created_event = created_events.get(date=event['date'])
+            for key, value in event.items():
+                if value and key != 'date':
+                    if key == 'time':
+                        self.assertEqual(str(created_event.time), value)
+                    else:
+                        self.assertEqual(getattr(created_event, key), value)

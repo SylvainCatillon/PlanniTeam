@@ -15,6 +15,7 @@ def create_planning(request):
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
         if planning_form.is_valid():
+            # with transaction.atomic()? Pour eviter un planning incomplet... Mais pas forcement grave, comme on peut le modifier...
             planning = planning_form.save()
             if planning.protected:
                 guest_emails = request.POST.getlist('guest_email')
@@ -30,7 +31,6 @@ def create_planning(request):
                     key, value = arg.split('=')
                     if value:
                         event_args[key] = unquote(value)
-                # with atomic? ou seulement quand on enchaine les create? mais je suis dans une boucle for...
                 Event.objects.create(**event_args)
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
