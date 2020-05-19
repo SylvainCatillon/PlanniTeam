@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% block content %}
+<div class="container">
   <form id="planning_form" method="post" action="{% url 'plannings:create' %}">
     {% csrf_token %}
     {{ planning_form.as_p }}
@@ -21,22 +22,26 @@
   <form class="dropdown-menu" id="event_form" action="{% url 'plannings:check_event' %}" aria-labelledby="dropdownButton">
     {% csrf_token %}
     {% for field in event_form %}
-        <div class="form-group pt-2 pt-lg-4">
-            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
-            <div class="font-bold h5">{{ field.label_tag }}</div>
-            {{ field }}
-            {% if field.help_text %}
-            <div class="font-italic">{{ field.help_text|safe }}</div>
-            {% endif %}
-        </div>
-      {% endfor %}
-    <input type="submit" value="Ajouter">
+      <div class="form-group pt-2 pt-lg-4">
+          <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
+          <div class="font-bold h5">{{ field.label_tag }}</div>
+          {{ field }}
+          {% if field.help_text %}
+          <div class="font-italic">{{ field.help_text|safe }}</div>
+          {% endif %}
+      </div>
+    {% endfor %}
+  <input type="submit" value="Ajouter">
   </form>
-  <div id="created_event_container" hidden>
-    {% for field in event_form %}
-        <div class="" js-event-field="{{ field.name }}"></div>
+  <div class="row" id="created_events_container">
+    <div class="card col-4 col-lg-3" id="created_event_model" hidden>
+      {% for field in event_form %}
+          <div class="" js-event-field="{{ field.name }}"></div>
       {% endfor %}
+      <button class="remove_event">Supprimer</button>
+    </div>
   </div>
+</div>
 {% endblock %}
 {% block js %}
   {{ block.super }}
@@ -44,6 +49,7 @@
   $(function () {
       const $planning_form = $('#planning_form')
       const $guests_container = $('#guests_container')
+      let event_id = 1
 
       /*
       Show the options to choose guests only if input 'protected' is checked
@@ -107,19 +113,24 @@
 
           $.post(url, data)
             .done(function(data) {
-                let input = $('<input>', {value: JSON.stringify(data), type: 'hidden', name: 'event'})
+                let input = $('<input>', {value: JSON.stringify(data), type: 'hidden', name: 'event', id: 'event_'+event_id})
                 $('#planning_form').append(input)
-                let $div = $('#created_event_container').clone()
+                let $div = $('#created_event_model').clone()
                 $div.children().each(function (i, elem) {
                     let $elem = $(elem)
-                    {#console.log($elem.attr('js-event-field'))#}
                     $elem.text(data[$elem.attr('js-event-field')])
 
                 });
-                $div.attr('hidden', null)
-                console.log($div.html())
-                $('body').append($div)
-                {#$('#planning_form').append($div)#}
+                $div.attr('hidden', null).attr('id', 'event_'+event_id)
+                $div.children('.remove_event').on('click', function (event) {
+                    let parent = $(this).parent()  // change to parents(class du div)?
+                    $('div[id="'+parent.attr('id')+'"').remove()
+                    $('input[id="'+parent.attr('id')+'"').remove()
+
+
+                })
+                event_id++
+                $('#created_events_container').append($div)
             })
             .fail(function (jqXHR) {
                 if (jqXHR.status === 422) {
@@ -133,8 +144,8 @@
                 }
             });
           $form.trigger('reset')
-
       })
+
 
 
       {#$planning_form.on('submit', function (event) {#}
