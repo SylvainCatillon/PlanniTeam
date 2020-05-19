@@ -1,6 +1,7 @@
 {% extends 'core/base.html' %}
 {% block content %}
-  <form id="planning_form" method="post" action="{% url 'plannings:create' %}">{% csrf_token %}
+  <form id="planning_form" method="post" action="{% url 'plannings:create' %}">
+    {% csrf_token %}
     {{ planning_form.as_p }}
   </form>
   <div id="guests_container" style="display: none">
@@ -16,7 +17,8 @@
     </form>
   </div>
   <input type="submit" form="planning_form" value="Envoyer">
-  <form id="event_form">
+  <form id="event_form" action="{% url 'plannings:check_event' %}">
+    {% csrf_token %}
     {{ event_form.as_p }}
     <input type="submit" value="Ajouter">
   </form>
@@ -82,9 +84,18 @@
       $('#event_form').on('submit', function (event) {
           event.preventDefault()
           event.stopPropagation()
-          let data = $(this).serialize(),
-              input = $('<input>', {value: data, type: 'hidden', name: 'event'})
-          $('#planning_form').append(input)
+          let $form = $(this),
+              url = $form.attr('action'),
+              data = $form.serialize()
+
+          $.post(url, data)
+            .done(function(data) {
+              console.log(data)
+              console.log(typeof(data))
+                let input = $('<input>', {value: data, type: 'hidden', name: 'event'})
+              $('#planning_form').append(input)
+            });
+
       })
 
 

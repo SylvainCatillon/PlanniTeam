@@ -1,5 +1,9 @@
+import json
+
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
+from django.core import serializers
+from django.http import HttpResponseRedirect, HttpResponse, Http404, \
+    JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -15,6 +19,7 @@ def create_planning(request):
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
         if planning_form.is_valid():
+            # import pdb;pdb.set_trace()
             # with transaction.atomic()? Pour eviter un planning incomplet... Mais pas forcement grave, comme on peut le modifier...
             planning = planning_form.save()
             if planning.protected:
@@ -25,13 +30,15 @@ def create_planning(request):
                     except GuestEmail.DoesNotExist:
                         planning.guest_emails.create(email=email)
             events = request.POST.getlist('event')
-            for event_string in events:
-                event_args = {'planning': planning}
-                for arg in event_string.split('&'):
-                    key, value = arg.split('=')
-                    if value:
-                        event_args[key] = unquote(value)
-                Event.objects.create(**event_args)
+            for event in events:
+                planning.event_set.create(**json.loads(event)[0]['fields'])
+            # for event_string in events:
+            #     event_args = {'planning': planning}
+            #     for arg in event_string.split('&'):
+            #         key, value = arg.split('=')
+            #         if value:
+            #             event_args[key] = unquote(value)
+            #     Event.objects.create(**event_args)
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:
@@ -39,6 +46,19 @@ def create_planning(request):
     event_form = EventCreationForm()
     context = {'planning_form': planning_form, 'event_form': event_form}
     return render(request, 'plannings/create_planning.html', context)
+
+
+def check_event(request):
+    if request.method == 'POST':
+        form = EventCreationForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            if event:
+                data = serializers.serialize('json', [event])
+                return HttpResponse(data)
+        else:
+            return JsonResponse(form.errors, status=400)  # Change Http error code. 422??
+    raise Http404('No Get on this page')  # Change error message
 
 
 def planning_created(request, planning_ekey): # Remplacer par TemplateView en créant link dans create??
@@ -49,3 +69,13 @@ def planning_created(request, planning_ekey): # Remplacer par TemplateView en cr
 
 def display_planning(request, planning_ekey):
     pass
+
+"""
+if form.is_valid():
+    event = form.save(commit=False)
+    data = serializers.serialize('json', [event])
+    return data in contexte to js
+    
+for e in serializers.deserialize('json', data):
+    e.save()
+"""
