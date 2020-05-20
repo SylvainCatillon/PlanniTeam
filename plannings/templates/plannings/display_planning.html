@@ -1,0 +1,7 @@
+{%  extends 'core/base.html' %}
+{%  block content %}
+  <p>{{ planning.name }}</p>
+  {%  for event in  planning.event_set.all%}
+  <p>{{ event.date }}</p>
+  {% endfor %}
+{% endblock %}

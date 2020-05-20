@@ -37,7 +37,7 @@
     <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto" id="created_event_model" style="height: 185px" hidden>
       <h5 class="card-header" js-event-field="{{ event_form.date.name }}"></h5>
       <div class="card-body">
-      {% for field in event_form %}
+      {% for field in event_form|slice:1 %}
         {% if field != event_form.date %} {# TODO: Remplacer par un custom tag permettant un for sauf date #}
           <div class="card-text" js-event-field="{{ field.name }}"></div>
         {% endif %}
@@ -133,7 +133,7 @@
 
           // Set an on click function to the remove button
           $div.find(".remove_event").on("click", function () {
-              let parent = $(this).parent()  // TODO: change to parents(class du div)?
+              let parent = $(this).parents(".card")
               $('div[id="'+parent.attr("id")+'"').remove()
               $('input[id="'+parent.attr("id")+'"').remove()
           })

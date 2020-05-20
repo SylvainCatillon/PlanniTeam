@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 
 
 from plannings.forms import PlanningCreationForm, EventCreationForm
-from plannings.models import GuestEmail
+from plannings.models import GuestEmail, Planning
 
 
 @login_required
@@ -81,4 +81,5 @@ def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView
 
 
 def display_planning(request, planning_ekey):
-    pass
+    planning = Planning.objects.get_by_ekey(planning_ekey)
+    return render(request, 'plannings/display_planning.html', {'planning': planning})
