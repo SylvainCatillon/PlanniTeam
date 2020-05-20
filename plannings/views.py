@@ -1,27 +1,36 @@
 import json
 
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect, HttpResponse, Http404, \
-    JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-
-from urllib.parse import unquote
+from django.views.decorators.http import require_POST
 
 
 from plannings.forms import PlanningCreationForm, EventCreationForm
-from plannings.models import GuestEmail, Event
+from plannings.models import GuestEmail
 
 
 @login_required
 def create_planning(request):
+    """
+    GET method:
+        Displays the planning creation page, with empty forms
+    POST method:
+        -Gather the data of the planning form.
+        -Test if the planning is valid.
+        -Save the planning in the database
+        -If the planning is protected, save the guests emails in the planning
+        -Save the events in the planning
+        -Redirects to planning:created with the hashed id of the planning.
+    """
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
         if planning_form.is_valid():
-            # import pdb;pdb.set_trace()
-            # with transaction.atomic()? Pour eviter un planning incomplet... Mais pas forcement grave, comme on peut le modifier...
+            # TODO: with transaction.atomic(),
+            #  pour eviter un planning incomplet?
+            #  Mais pas forcement grave, comme on peut le modifier...
             planning = planning_form.save()
             if planning.protected:
                 guest_emails = request.POST.getlist('guest_email')
@@ -33,13 +42,7 @@ def create_planning(request):
             events = request.POST.getlist('event')
             for event in events:
                 planning.event_set.create(**json.loads(event))
-            # for event_string in events:
-            #     event_args = {'planning': planning}
-            #     for arg in event_string.split('&'):
-            #         key, value = arg.split('=')
-            #         if value:
-            #             event_args[key] = unquote(value)
-            #     Event.objects.create(**event_args)
+
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:
@@ -49,33 +52,33 @@ def create_planning(request):
     return render(request, 'plannings/create_planning.html', context)
 
 
+# TODO: Is post the good method? Put?
+#  Si changement, require_Post ==> require_http_methods
+@require_POST
 def check_event(request):
-    if request.method == 'POST': # is POST the good method?
-        form = EventCreationForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            if event: # verification inutile, suite à form.is_valid?
-                return JsonResponse(model_to_dict(event))
-        else:
-            return JsonResponse(form.errors, status=422)  # Change Http error code. 422 ou 400?
-    raise Http404('No Get on this page')  # Change error message
+    """
+    Checks if the event form is valid.
+    If it's valid, returns the event data as Json.
+    If it's not, returns the form errors as Json, and the Http code 422.
+    Accept only POST request.
+    """
+    form = EventCreationForm(request.POST)
+    if form.is_valid():
+        event = form.save(commit=False)
+        if event:  # TODO: verification inutile, suite à form.is_valid?
+            return JsonResponse(model_to_dict(event))
+    else:
+        return JsonResponse(form.errors, status=422)
+        # TODO: Change Http error code. 422 ou 400?
 
 
-def planning_created(request, planning_ekey): # Remplacer par TemplateView en créant link dans create??
+def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView en créant link dans create??
+    """After a planning was created, displays a page with the access link
+    of the planning."""
     link = request.build_absolute_uri(reverse(
-        'plannings:display', args=(planning_ekey,)))  # security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
+        'plannings:display', args=(planning_ekey,)))  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})
 
 
 def display_planning(request, planning_ekey):
     pass
-
-"""
-if form.is_valid():
-    event = form.save(commit=False)
-    data = serializers.serialize('json', [event])
-    return data in contexte to js
-    
-for e in serializers.deserialize('json', data):
-    e.save()
-"""

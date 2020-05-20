@@ -28,5 +28,5 @@ class Event(models.Model):
     time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
-#     participations = models.ManyToManyField(User, through='Participation')
+#   TODO:  participations = models.ManyToManyField(User, through='Participation')
 
