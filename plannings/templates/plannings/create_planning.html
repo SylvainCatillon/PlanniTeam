@@ -8,8 +8,8 @@
   <div id="guests_container" style="display: none">
     <form id="guest_emails_form">
       <label for="guest_email">Ajouter un Email</label>
-      <input type="email" id="guest_email" name="add_guest_email" required>
-      <input class="btn btn-secondary" type="submit" value="Ajouter">
+      <input id="guest_email"  type="email" name="add_guest_email" required>
+      <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter">
     </form>
     <form id="guests_select_form" class="form-group text-center">
       <label for="guests_email_select">Emails sélectionnés</label>
@@ -18,8 +18,8 @@
       <input class="btn btn-info" type="reset" value="Désélectionner">
     </form>
   </div>
-  <button class="btn btn-secondary mt-3 dropdown-toggle dropdownButton" id="dropdownButton" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false">Ajouter un événement</button>
-  <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="dropdownButton">
+  <button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle dropdownButton" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false">Ajouter un événement</button>
+  <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown">
     {% csrf_token %}
     {% for field in event_form %}
       <div class="form-group">
@@ -31,7 +31,7 @@
           {% endif %}
       </div>
     {% endfor %}
-  <input class="btn btn-primary" type="submit" value="Ajouter">
+  <input id="event_submit" class="btn btn-primary" type="submit" value="Ajouter">
   </form>
   <div id="created_events_container" class="bg-dark row my-3 p-1 rounded overflow-auto" style="height: 200px">
     <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto" id="created_event_model" style="height: 185px" hidden>
@@ -46,7 +46,7 @@
       </div>
     </div>
   </div>
-  <input class="btn btn-primary btn-lg btn-block" type="submit" form="planning_form" value="Créer le planning">
+  <input id="planning_submit" class="btn btn-primary btn-lg btn-block" type="submit" form="planning_form" value="Créer le planning">
 </div>
 {% endblock %}
 {% block js %}

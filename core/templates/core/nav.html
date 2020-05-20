@@ -12,6 +12,10 @@
         <li class="nav-item {% if request.path == url %}active{% endif %}">
           <a class="nav-link" href="{{ url }}">Accueil{% if request.path == url %}<span class="sr-only">(current)</span>{% endif %}</a>
         </li>
+      {% url 'plannings:create' as url %}
+        <li class="nav-item {% if request.path == url %}active{% endif %}">
+          <a class="nav-link" href="{{ url }}">Créer un planning{% if request.path == url %}<span class="sr-only">(current)</span>{% endif %}</a>
+        </li>
         {% url 'accounts:profile' as url %}
         <li class="nav-item {% if request.path == url %}active{% endif %}">
           <a class="nav-link" href="{{ url }}">Mon compte{% if request.path == url %}<span class="sr-only">(current)</span>{% endif %}</a>
