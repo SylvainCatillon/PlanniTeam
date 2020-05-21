@@ -78,8 +78,3 @@ def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView
     link = request.build_absolute_uri(reverse(
         'plannings:display', args=(planning_ekey,)))  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})
-
-
-def display_planning(request, planning_ekey):
-    planning = Planning.objects.get_by_ekey(planning_ekey)
-    return render(request, 'plannings/display_planning.html', {'planning': planning})

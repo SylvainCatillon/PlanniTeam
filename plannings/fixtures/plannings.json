@@ -1,0 +1,45 @@
+[
+{
+    "model": "plannings.guestemail",
+    "pk": 1,
+    "fields": {
+        "email": "participant@test.com"
+    }
+},
+{
+    "model": "plannings.planning",
+    "pk": 1,
+    "fields": {
+        "creator": 1,
+        "creation_date": "2020-05-21T14:48:55.204Z",
+        "last_modification_date": "2020-05-21T14:49:19.572Z",
+        "name": "Test",
+        "protected": true,
+        "guest_emails": [
+            1
+        ]
+    }
+},
+{
+    "model": "plannings.event",
+    "pk": 1,
+    "fields": {
+        "planning": 1,
+        "date": "2020-09-25",
+        "time": "12:00:00",
+        "description": "This is a description",
+        "address": "2 boulevard something, 75003 Paris"
+    }
+},
+{
+    "model": "plannings.event",
+    "pk": 2,
+    "fields": {
+        "planning": 1,
+        "date": "2020-12-10",
+        "time": "20:00:00",
+        "description": "",
+        "address": ""
+    }
+}
+]

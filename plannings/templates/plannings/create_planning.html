@@ -7,9 +7,13 @@
   </form>
   <div id="guests_container" style="display: none">
     <form id="guest_emails_form">
-      <label for="guest_email">Ajouter un Email</label>
-      <input id="guest_email"  type="email" name="add_guest_email" required>
-      <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter">
+      <div class="input-group">
+{#        <label for="guest_email">Ajouter un Email</label>#}
+        <input class="form-control" id="guest_email"  type="email" name="add_guest_email" placeholder="invité@exemple.com" required>
+        <div class="input-group-append">
+          <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter cet email">
+        </div>
+      </div>
     </form>
     <form id="guests_select_form" class="form-group text-center">
       <label for="guests_email_select">Emails sélectionnés</label>
@@ -18,21 +22,26 @@
       <input class="btn btn-info" type="reset" value="Désélectionner">
     </form>
   </div>
-  <button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle dropdownButton" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false">Ajouter un événement</button>
-  <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown">
-    {% csrf_token %}
-    {% for field in event_form %}
-      <div class="form-group">
-          <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
-          {{ field.label_tag }}
-          {{ field }}
-          {% if field.help_text %}
-          <div class="font-italic">{{ field.help_text|safe }}</div>
-          {% endif %}
-      </div>
-    {% endfor %}
-  <input id="event_submit" class="btn btn-primary" type="submit" value="Ajouter">
-  </form>
+  <div class="dropdown">
+    <button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false">
+      Ajouter un événement
+    </button>
+    <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown">
+    <a class="close" onclick="$('#event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+      {% csrf_token %}
+      {% for field in event_form %}
+        <div class="form-group">
+            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+            <div class="font-italic">{{ field.help_text|safe }}</div>
+            {% endif %}
+        </div>
+      {% endfor %}
+    <input id="event_submit" class="btn btn-primary" type="submit" value="Ajouter">
+    </form>
+  </div>
   <div id="created_events_container" class="bg-dark row my-3 p-1 rounded overflow-auto" style="height: 200px">
     <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto" id="created_event_model" style="height: 185px" hidden>
       <h5 class="card-header" js-event-field="{{ event_form.date.name }}"></h5>
@@ -146,7 +155,7 @@
 
           // Reset the event from and hide it
           $event_form.trigger("reset")
-          $('#event_dropdown').click()
+          $('#event_dropdown').dropdown('hide')
       }
 
       /*

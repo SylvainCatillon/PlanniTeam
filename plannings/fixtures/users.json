@@ -32,5 +32,22 @@
         "groups": [],
         "user_permissions": []
     }
+},
+{
+    "model": "accounts.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$fMt9YeuSlAo1$qaehha49QdO31gDZiRgTynaIYSlkg3q2hbJUdC7JUEo=",
+        "last_login": null,
+        "is_superuser": false,
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-05-16T16:32:23.350Z",
+        "email": "stranger@test.com",
+        "first_name": "Stranger",
+        "groups": [],
+        "user_permissions": []
+    }
 }
 ]

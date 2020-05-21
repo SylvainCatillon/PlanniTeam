@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
-    'plannings.apps.PlanningsConfig'
+    'plannings.apps.PlanningsConfig',
+    'participations.apps.ParticipationsConfig',
 ]
 
 MIDDLEWARE = [

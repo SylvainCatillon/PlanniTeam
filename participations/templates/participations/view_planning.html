@@ -1,0 +1,51 @@
+{%  extends 'core/base.html' %}
+{%  block content %}
+<div class="container"><h3 class="text-center">{{ planning.name }}</h3>
+  <table class="table table-bordered text-center table-responsive-sm">
+  <thead>
+  <tr>
+    <th></th>
+    <th scope="col">{{ user.first_name }}</th>
+    {% for e in planning.guest_emails.all %}
+      <th scope="col">{{ e }}</th>
+    {%  endfor %}
+  </tr>
+  </thead>
+  <tbody>
+  {%  for event in  planning.event_set.all %}
+    <tr>
+    <td>
+    <div class="dropright my-1">
+      <button id="'event_{{ event.id }}" class="dropdown-toggle btn btn-dark" data-toggle="dropdown" aria-expanded="false">
+    {{ event.date|date:"d M" }}
+    </button>
+    <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
+      <p>{% if event.time %}{{ event.time }}{% endif %}</p>
+      <p>{{ event.address }}</p>
+      <p>{{ event.description }}</p>
+    </div>
+    </div>
+    </td>
+    <td>
+      <div class="dropright my-1">
+      <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-info" data-toggle="dropdown" aria-expanded="false">
+        New
+      </button>
+      <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
+        <input type="radio" id="male" name="answer" value="yes">
+        <label for="male">Oui</label><br>
+        <input type="radio" id="female" name="answer" value="no">
+        <label for="female">Non</label><br>
+        <input type="radio" id="other" name="answer" value="maybe">
+        <label for="other">Peut-être</label>
+      </div>
+      </div>
+    </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+</div>
+{% endblock %}
+<button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle dropdownButton" data-toggle="dropdown" aria-hashpopup="true" aria-expanded="false">Ajouter un événement</button>
+  <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown">

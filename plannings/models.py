@@ -33,3 +33,6 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
 #   TODO:participations = models.ManyToManyField(User, through='Participation')
+
+    class Meta:
+        ordering = ['date']

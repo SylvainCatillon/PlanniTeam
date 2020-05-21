@@ -8,6 +8,4 @@ urlpatterns = [
     path('check_event/', views.check_event, name='check_event'),  # rename???
     path('created/<str:planning_ekey>/', views.planning_created,
          name='created'),
-    path('display/<str:planning_ekey>/', views.display_planning,
-         name='display'),
 ]
