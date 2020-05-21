@@ -14,6 +14,10 @@ class GuestEmail(models.Model):
 class Planning(EncryptedIDModel):
     creator = models.ForeignKey(User, on_delete=models.CASCADE,
                                 related_name='planning_created')
+    creation_date = models.DateTimeField(auto_now_add=True)
+    # TODO: lier à la création/modification d'event.
+    #  Via une fonction qui récupère le champ last_modified de Event?
+    last_modification_date = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200)
     protected = models.BooleanField(default=False)
     guest_emails = models.ManyToManyField(GuestEmail)
@@ -28,5 +32,4 @@ class Event(models.Model):
     time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
-#   TODO:  participations = models.ManyToManyField(User, through='Participation')
-
+#   TODO:participations = models.ManyToManyField(User, through='Participation')
