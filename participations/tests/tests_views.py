@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
-from plannings.models import Planning
+from plannings.models import Planning, Event
 
 
 class DisplayViewTestCase(TestCase):
@@ -26,12 +26,12 @@ class DisplayViewTestCase(TestCase):
             response,
             f'/accounts/login/?next=/participations/view/{self.key}/')
 
-    def test_get_creation_page_by_url(self):
+    def test_get_page_by_url(self):
         response = self.client.get(
             f'/participations/view/{self.key}/')
         self.assertEqual(response.status_code, 200)
 
-    def test_get_creation_page_by_name(self):
+    def test_get_page_by_name(self):
         response = self.client.get(reverse('participations:view', kwargs={
             'planning_ekey': self.key}))
         self.assertEqual(response.status_code, 200)
@@ -42,3 +42,16 @@ class DisplayViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response,
                                 'participations/view_planning.html')
+
+    # TODO: test_stranger_cant_access
+
+    def test_participants_in_context(self):
+        response = self.client.get(reverse('participations:view', kwargs={
+            'planning_ekey': self.key}))
+        events = Event.objects.filter(planning=self.planning)
+        participants_list = []
+        for user in User.objects.filter(event__in=events):
+            if user not in participants_list:
+                participants_list.append(user)
+        self.assertIn(participants_list, response.context)  # FIXME
+

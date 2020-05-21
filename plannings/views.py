@@ -41,7 +41,8 @@ def create_planning(request):
                         planning.guest_emails.create(email=email)
             events = request.POST.getlist('event')
             for event in events:
-                planning.event_set.create(**json.loads(event))
+                event_args = {key: value for key, value in json.loads(event).items() if value}
+                planning.event_set.create(**event_args)
 
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
@@ -76,5 +77,5 @@ def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView
     """After a planning was created, displays a page with the access link
     of the planning."""
     link = request.build_absolute_uri(reverse(
-        'plannings:display', args=(planning_ekey,)))  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
+        'participations:view', args=(planning_ekey,)))  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})
