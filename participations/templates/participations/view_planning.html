@@ -4,21 +4,22 @@
   <table class="table table-bordered text-center table-responsive-sm">
   <thead>
   <tr>
-    <th></th>
+    <th class="text-muted">Événements</th>
+    <th class="text-muted">Dispos</th>
     <th scope="col">{{ user.first_name }}</th>
-    {% for participant in planning.get_participants %}
+    {% for participant in other_participants %}
       <th scope="col">{{ participant.first_name }}</th>
     {%  endfor %}
   </tr>
   </thead>
   <tbody>
-  {%  for event, participations_list in  events.items %}
+  {%  for event in  events%}
     <tr>
-      <td>
+      <td class="bg-dark"> {# events column #}
         <div class="dropright my-1">
-          <button id="'event_{{ event.id }}" class="dropdown-toggle btn btn-dark" data-toggle="dropdown" aria-expanded="false">
+          <a id="'event_{{ event.id }}" class="dropdown-toggle btn text-white" data-toggle="dropdown" aria-expanded="false">
         {{ event.date|date:"d M" }}
-        </button>
+        </a>
         <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
           <p>{% if event.time %}{{ event.time }}{% endif %}</p>
           <p>{{ event.address }}</p>
@@ -26,10 +27,19 @@
         </div>
         </div>
       </td>
-      <td>
+      <td>{# availabilities column #}
+        <p>{{ event.availability_count }}</p>
+      </td>
+      <td> {# user column #}
         <div class="dropright my-1">
-        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-info" data-toggle="dropdown" aria-expanded="false">
-          New
+        {%  with part=event.user_part %}
+        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-{{ part.get_color }}" data-toggle="dropdown" aria-expanded="false">
+          {% if part %}
+            <span>{{ part.get_answer_display }}</span>
+          {% else %}
+            <span>New</span>
+          {% endif %}
+        {%  endwith %}
         </button>
         <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
           <input type="radio"name="answer" value="yes">
@@ -41,8 +51,8 @@
         </div>
         </div>
       </td>
-        {% for participation in participations_list %}
-          <td>
+        {% for participation in event.parts %}
+          <td class="bg-{{ participation.get_color }}"> {# participants column #}
           {% if participation %}
             <p>{{ participation.get_answer_display }}</p>
           {%  else %}

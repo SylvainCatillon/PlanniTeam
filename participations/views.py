@@ -15,22 +15,51 @@ def view_planning(request, planning_ekey): # si pas default. num 1
                             .order_by('first_name'):
         if user != request.user:
             other_participants.append(user)
-    events = {}
+    events = list(planning.event_set.all())
     #  TODO: Voir prefetch_related pour optimisation
-    for event in planning.event_set.all():
-        vls = []
-        for user in other_participants:
-            try:
-                part = event.participation_set.get(participant=user)
-                vls.append(part)
-            except Participation.DoesNotExist:
-                vls.append(None)
-            events[event] = vls
+    for event in events:
+        event.user_part = None
+        event.parts = [None]*len(other_participants)
+        event.availability_count = 0
+        event_parts = event.participation_set.all()
+        for part in event_parts:
+            if part.answer == 'YES':
+                event.availability_count += 1
+            if part.participant == request.user:
+                event.user_part = part
+            elif part.participant in other_participants:
+                event.parts[other_participants.index(part.participant)] = part
     context = {'planning': planning,
                'other_participants': other_participants,
                'events': events}
     return render(request,
                   'participations/view_planning.html', context)
+
+# @login_required
+# def view_planning(request, planning_ekey): # si pas default. old function
+#     planning = Planning.objects.get_by_ekey(planning_ekey)
+#     other_participants = []
+#     for user in User.objects.filter(event__planning__pk=planning.pk)\
+#                             .distinct()\
+#                             .order_by('first_name'):
+#         if user != request.user:
+#             other_participants.append(user)
+#     events = {}
+#     #  TODO: Voir prefetch_related pour optimisation
+#     for event in planning.event_set.all():
+#         vls = []
+#         for user in other_participants:
+#             try:
+#                 part = event.participation_set.get(participant=user)
+#                 vls.append(part)
+#             except Participation.DoesNotExist:
+#                 vls.append(None)
+#             events[event] = vls
+#     context = {'planning': planning,
+#                'other_participants': other_participants,
+#                'events': events}
+#     return render(request,
+#                   'participations/view_planning.html', context)
 
 
 # TODO: Voir si une réponses 'NA' par défault dans Participation,

@@ -49,3 +49,9 @@ class Event(models.Model):
 
     class Meta:
         ordering = ['date']
+
+    # TODO: optimisation: eviter un requete à la base de données en effectuant
+    #  ce compte dans la vue, et en determinant l'attribut à ce moment là
+    # @property
+    # def availability_count(self):
+    #     return self.participation_set.filter(answer='YES').count()

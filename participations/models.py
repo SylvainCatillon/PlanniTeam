@@ -28,3 +28,13 @@ class Participation(models.Model):
         participant = self.participant.first_name
         event = self.event.pk
         return f"Participant: {participant}, Event: {event}"
+
+    def get_color(self):
+        # TODO: déplacer colors vers un fichier de config ou des propriétés CSS
+        colors = {
+            'YES': 'success',
+            'MAYBE': 'warning',
+            'NO': 'danger',
+            None: 'info'
+        }
+        return colors.get(self.answer)
