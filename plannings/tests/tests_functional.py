@@ -50,6 +50,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         # TODO: verifier le planning avec l'ekey si elle est
         #  transmise en argument dans le lien
 
+    @tag('selenium')
     def test_create_maximal_planning(self):
         self.assertFalse(self.user.planning_created.count())
         driver = self.selenium

@@ -6,7 +6,7 @@ from plannings.models import Planning, Event
 
 
 class DisplayViewTestCase(TestCase):
-    fixtures = ['users', 'plannings']
+    fixtures = ['users', 'plannings', 'participations']
 
     @classmethod
     def setUpClass(cls):
@@ -48,10 +48,25 @@ class DisplayViewTestCase(TestCase):
     def test_participants_in_context(self):
         response = self.client.get(reverse('participations:view', kwargs={
             'planning_ekey': self.key}))
+        self.assertEqual(response.status_code, 200)
         events = Event.objects.filter(planning=self.planning)
-        participants_list = []
-        for user in User.objects.filter(event__in=events):
-            if user not in participants_list:
-                participants_list.append(user)
-        self.assertIn(participants_list, response.context)  # FIXME
+        other_participants = []
+        for user in User.objects.filter(event__in=events)\
+                                .order_by('first_name'):
+            if user != self.user and user not in other_participants:
+                other_participants.append(user)
+        self.assertIn('other_participants', response.context.keys())
+        self.assertEqual(other_participants,
+                         response.context['other_participants'])
 
+    def test_events_in_context(self):
+        response = self.client.get(reverse('participations:view', kwargs={
+            'planning_ekey': self.key}))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('events', response.context)
+        context_events = response.context['events']
+        for event in Event.objects.filter(planning=self.planning):
+            self.assertIn(event, context_events.keys())
+            for participation in event.participation_set.exclude(
+                    participant=self.user):
+                self.assertIn(participation, context_events[event])

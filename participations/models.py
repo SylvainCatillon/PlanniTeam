@@ -22,6 +22,7 @@ class Participation(models.Model):
             # TODO: CheckConstraint vérifiant que l'email de l'user est dans
             #  la guest_mail du planning de l'event
         ]
+        ordering = ['participant__first_name']  # TODO: verifier l'utilité
 
     def __str__(self):
         participant = self.participant.first_name

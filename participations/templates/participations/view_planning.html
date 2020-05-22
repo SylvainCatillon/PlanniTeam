@@ -6,41 +6,59 @@
   <tr>
     <th></th>
     <th scope="col">{{ user.first_name }}</th>
-    {% for e in planning.guest_emails.all %}
-      <th scope="col">{{ e }}</th>
+    {% for participant in planning.get_participants %}
+      <th scope="col">{{ participant.first_name }}</th>
     {%  endfor %}
   </tr>
   </thead>
   <tbody>
-  {%  for event in  planning.event_set.all %}
+  {%  for event, participations_list in  events.items %}
     <tr>
-    <td>
-    <div class="dropright my-1">
-      <button id="'event_{{ event.id }}" class="dropdown-toggle btn btn-dark" data-toggle="dropdown" aria-expanded="false">
-    {{ event.date|date:"d M" }}
-    </button>
-    <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
-      <p>{% if event.time %}{{ event.time }}{% endif %}</p>
-      <p>{{ event.address }}</p>
-      <p>{{ event.description }}</p>
-    </div>
-    </div>
-    </td>
-    <td>
-      <div class="dropright my-1">
-      <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-info" data-toggle="dropdown" aria-expanded="false">
-        New
-      </button>
-      <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
-        <input type="radio" id="male" name="answer" value="yes">
-        <label for="male">Oui</label><br>
-        <input type="radio" id="female" name="answer" value="no">
-        <label for="female">Non</label><br>
-        <input type="radio" id="other" name="answer" value="maybe">
-        <label for="other">Peut-être</label>
-      </div>
-      </div>
-    </td>
+      <td>
+        <div class="dropright my-1">
+          <button id="'event_{{ event.id }}" class="dropdown-toggle btn btn-dark" data-toggle="dropdown" aria-expanded="false">
+        {{ event.date|date:"d M" }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
+          <p>{% if event.time %}{{ event.time }}{% endif %}</p>
+          <p>{{ event.address }}</p>
+          <p>{{ event.description }}</p>
+        </div>
+        </div>
+      </td>
+      <td>
+        <div class="dropright my-1">
+        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-info" data-toggle="dropdown" aria-expanded="false">
+          New
+        </button>
+        <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
+          <input type="radio"name="answer" value="yes">
+          <label for="male">Oui</label><br>
+          <input type="radio" name="answer" value="no">
+          <label for="female">Non</label><br>
+          <input type="radio" name="answer" value="maybe">
+          <label for="other">Peut-être</label>
+        </div>
+        </div>
+      </td>
+        {% for participation in participations_list %}
+          <td>
+          {% if participation %}
+            <p>{{ participation.get_answer_display }}</p>
+          {%  else %}
+            <p>New</p>
+          {%  endif %}
+          </td>
+        {% endfor %}
+
+{#      {% for participation in event.participation_set.all %}#}
+{#        {% if participation.participant != user %}#}
+{#        <td>#}
+{#          <p>{{ participation }}</p>#}
+{#        </td>#}
+{#        {%  endif %}#}
+{#      {% endfor %}#}
+
     </tr>
   {% endfor %}
   </tbody>

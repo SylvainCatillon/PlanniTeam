@@ -25,6 +25,18 @@ class Planning(EncryptedIDModel):
     def __str__(self):
         return f"Planning {self.name} by {self.creator.email}"
 
+    #  TODO: Voir si la fonction peut-être rentable en l'optimisant.
+    #   Peut-être en utilisant prefetch_related.
+    #   Trop de requête à la base de données pour l'instant,
+    #   et donne aussi l'utilisateur en cours
+    # def get_participants(self):
+    #     participants = []
+    #     for event in self.event_set.all():
+    #         for participant in event.participants.all():
+    #             participants.append(participant)
+    #     return sorted(list(dict.fromkeys(participants)),
+    #                   key=lambda x: x.first_name)
+
 
 class Event(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
@@ -32,7 +44,7 @@ class Event(models.Model):
     time = models.TimeField(blank=True, null=True)
     description = models.TextField(blank=True)
     address = models.CharField(max_length=300, blank=True)
-    participations = models.ManyToManyField(
+    participants = models.ManyToManyField(
         User, through='participations.Participation')
 
     class Meta:

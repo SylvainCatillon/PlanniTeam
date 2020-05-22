@@ -41,23 +41,5 @@
         "description": "",
         "address": ""
     }
-},
-{
-    "model": "participations.participation",
-    "pk": 1,
-    "fields": {
-        "event": 1,
-        "participant": 2,
-        "answer": "YES"
-    }
-},
-{
-    "model": "participations.participation",
-    "pk": 2,
-    "fields": {
-        "event": 2,
-        "participant": 2,
-        "answer": "NO"
-    }
 }
 ]
