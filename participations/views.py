@@ -8,6 +8,8 @@ from plannings.models import Planning
 
 @login_required
 def view_planning(request, planning_ekey): # si pas default. num 1
+    # TODO: gestion de planning inexistant.
+    # get_by_ekey_or_404 ou message custom
     planning = Planning.objects.get_by_ekey(planning_ekey)
     other_participants = []
     for user in User.objects.filter(event__planning__pk=planning.pk)\

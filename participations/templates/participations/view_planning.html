@@ -1,14 +1,14 @@
 {%  extends 'core/base.html' %}
 {%  block content %}
 <div class="container"><h3 class="text-center">{{ planning.name }}</h3>
-  <table class="table table-bordered text-center table-responsive-sm">
+  <table class="table table-bordered text-center table-responsive">
   <thead>
   <tr>
     <th class="text-muted">Événements</th>
     <th class="text-muted">Dispos</th>
     <th scope="col">{{ user.first_name }}</th>
     {% for participant in other_participants %}
-      <th scope="col">{{ participant.first_name }}</th>
+      <th scope="col" class="d-none d-md-table-cell">{{ participant.first_name }}</th>
     {%  endfor %}
   </tr>
   </thead>
@@ -27,18 +27,14 @@
         </div>
         </div>
       </td>
-      <td>{# availabilities column #}
+      <td> {# availabilities column #}
         <p>{{ event.availability_count }}</p>
       </td>
       <td> {# user column #}
         <div class="dropright my-1">
         {%  with part=event.user_part %}
-        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-{{ part.get_color }}" data-toggle="dropdown" aria-expanded="false">
-          {% if part %}
-            <span>{{ part.get_answer_display }}</span>
-          {% else %}
-            <span>New</span>
-          {% endif %}
+        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-{{ part.get_color|default:"info" }}" data-toggle="dropdown" aria-expanded="false">
+            <span>{{ part.get_answer_display|default:"New" }}</span>
         {%  endwith %}
         </button>
         <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
@@ -51,13 +47,9 @@
         </div>
         </div>
       </td>
-        {% for participation in event.parts %}
-          <td class="bg-{{ participation.get_color }}"> {# participants column #}
-          {% if participation %}
-            <p>{{ participation.get_answer_display }}</p>
-          {%  else %}
-            <p>New</p>
-          {%  endif %}
+        {% for participation in event.parts %} {# participants column #}
+          <td class="d-none d-md-table-cell bg-{{ participation.get_color|default:"info" }}">
+            <span>{{ participation.get_answer_display }}</span>
           </td>
         {% endfor %}
 
