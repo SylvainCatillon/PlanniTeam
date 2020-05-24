@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from collections import defaultdict
+
 from accounts.models import User
 from participations.models import Participation
 from plannings.models import Planning
@@ -23,8 +25,10 @@ def view_planning(request, planning_ekey): # si pas default. num 1
         event.user_part = None
         event.parts = [None]*len(other_participants)
         event.availability_count = 0
+        event.dico = defaultdict(list)
         event_parts = event.participation_set.all()
         for part in event_parts:
+            event.dico[part.answer].append(part.participant.first_name)
             if part.answer == 'YES':
                 event.availability_count += 1
             if part.participant == request.user:

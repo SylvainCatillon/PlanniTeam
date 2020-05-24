@@ -1,8 +1,8 @@
 {%  extends 'core/base.html' %}
 {%  block content %}
-<div class="container"><h3 class="text-center">{{ planning.name }}</h3>
-  <table class="table table-bordered text-center table-responsive">
-  <thead>
+<div class="container table-responsive"><h3 class="text-center">{{ planning.name }}</h3>
+  <table class="table table-bordered text-center">
+  <thead class="thead-light">
   <tr>
     <th class="text-muted">Événements</th>
     <th class="text-muted">Dispos</th>
@@ -28,7 +28,27 @@
         </div>
       </td>
       <td> {# availabilities column #}
-        <p>{{ event.availability_count }}</p>
+        <div class="dropright">
+        <button id="summary_{{ event.id }}" class="dropdown-toggle btn" data-toggle="dropdown" aria-expanded="false">
+          <p>{{ event.dico.YES|length }} oui</p>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="summary_{{ event.id }}">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item list-group-item-success">
+              <h5 >Oui</h5>
+              {{ event.dico.YES|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.dico.YES|length }}</span>  #}
+            </li>
+            <li class="list-group-item list-group-item-warning">
+              <h5 >Peut-être</h5>
+              {{ event.dico.MAYBE|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.dico.MAYBE|length }}</span>  #}
+            </li>
+            <li class="list-group-item list-group-item-danger">
+              <h5 >Non</h5>
+              {{ event.dico.NO|join:", " }}{# <span class="badge badge-primary badge-pill">{{ event.dico.NO|length }}</span>  #}
+            </li>
+          </ul>
+        </div>
+        </div>
       </td>
       <td> {# user column #}
         <div class="dropright my-1">
@@ -48,7 +68,7 @@
         </div>
       </td>
         {% for participation in event.parts %} {# participants column #}
-          <td class="d-none d-md-table-cell bg-{{ participation.get_color|default:"info" }}">
+          <td class="d-none d-md-table-cell table-{{ participation.get_color|default:"info" }}">
             <span>{{ participation.get_answer_display }}</span>
           </td>
         {% endfor %}
