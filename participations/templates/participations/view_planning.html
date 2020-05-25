@@ -30,21 +30,21 @@
       <td> {# availabilities column #}
         <div class="dropright">
         <button id="summary_{{ event.id }}" class="dropdown-toggle btn" data-toggle="dropdown" aria-expanded="false">
-          <p>{{ event.dico.YES|length }} oui</p>
+          <p>{{ event.participations_summary.YES|length }} oui</p>
         </button>
         <div class="dropdown-menu" aria-labelledby="summary_{{ event.id }}">
           <ul class="list-group list-group-flush">
             <li class="list-group-item list-group-item-success">
               <h5 >Oui</h5>
-              {{ event.dico.YES|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.dico.YES|length }}</span>  #}
+              {{ event.participations_summary.YES|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.participations_summary.YES|length }}</span>  #}
             </li>
             <li class="list-group-item list-group-item-warning">
               <h5 >Peut-être</h5>
-              {{ event.dico.MAYBE|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.dico.MAYBE|length }}</span>  #}
+              {{ event.participations_summary.MAYBE|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.participations_summary.MAYBE|length }}</span>  #}
             </li>
             <li class="list-group-item list-group-item-danger">
               <h5 >Non</h5>
-              {{ event.dico.NO|join:", " }}{# <span class="badge badge-primary badge-pill">{{ event.dico.NO|length }}</span>  #}
+              {{ event.participations_summary.NO|join:", " }}{# <span class="badge badge-primary badge-pill">{{ event.participations_summary.NO|length }}</span>  #}
             </li>
           </ul>
         </div>
@@ -52,9 +52,9 @@
       </td>
       <td> {# user column #}
         <div class="dropright my-1">
-        {%  with part=event.user_part %}
-        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-{{ part.get_color|default:"info" }}" data-toggle="dropdown" aria-expanded="false">
-            <span>{{ part.get_answer_display|default:"New" }}</span>
+        {%  with participation=event.user_participation %}
+        <button id="answer_{{ user.first_name }}" class="dropdown-toggle btn btn-{{ participation.get_color|default:"info" }}" data-toggle="dropdown" aria-expanded="false">
+            <span>{{ participation.get_answer_display|default:"New" }}</span>
         {%  endwith %}
         </button>
         <div class="dropdown-menu" aria-labelledby="answer_{{ user.first_name }}">
@@ -67,7 +67,7 @@
         </div>
         </div>
       </td>
-        {% for participation in event.parts %} {# participants column #}
+        {% for participation in event.other_participations %} {# participants column #}
           <td class="d-none d-md-table-cell table-{{ participation.get_color|default:"info" }}">
             <span>{{ participation.get_answer_display }}</span>
           </td>

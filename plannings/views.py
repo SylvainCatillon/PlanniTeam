@@ -44,6 +44,7 @@ def create_planning(request):
                 event_args = {key: value for key, value in json.loads(event).items() if value}
                 planning.event_set.create(**event_args)
 
+            # TODO: remplacer par shortcut redirect()
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:

@@ -1,40 +1,49 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from collections import defaultdict
-
 from accounts.models import User
-from participations.models import Participation
 from plannings.models import Planning
 
 
 @login_required
-def view_planning(request, planning_ekey): # si pas default. num 1
+def view_planning(request, planning_ekey):
     # TODO: gestion de planning inexistant.
-    # get_by_ekey_or_404 ou message custom
+    #  get_by_ekey_or_404 ou message custom
     planning = Planning.objects.get_by_ekey(planning_ekey)
+    if planning.protected and \
+            request.user.email not in planning.get_guest_emails:
+        return render(request, 'participations/protected_planning.html')
+
+    # Get a list of all the planning's participants, except the current user
     other_participants = []
     for user in User.objects.filter(event__planning__pk=planning.pk)\
                             .distinct()\
                             .order_by('first_name'):
         if user != request.user:
             other_participants.append(user)
+
+    # Gather all the planning's events, and add information to display
     events = list(planning.event_set.all())
-    #  TODO: Voir prefetch_related pour optimisation
+    #  TODO: Voir prefetch_related pour optimisation.
+    #   Voir noms variables
     for event in events:
-        event.user_part = None
-        event.parts = [None]*len(other_participants)
-        event.availability_count = 0
-        event.dico = defaultdict(list)
-        event_parts = event.participation_set.all()
-        for part in event_parts:
-            event.dico[part.answer].append(part.participant.first_name)
-            if part.answer == 'YES':
-                event.availability_count += 1
+        # Set the participations as None, to have a sequence of participations
+        # in the same order that the other_participants list.
+        # Each item will be the participation if founded, or the default None
+        event.other_participations = [None]*len(other_participants)
+        event.user_participation = None
+        # Participations_summary is a dict {answer: list of participants name},
+        # to display a summary of the answers in the planning
+        event.participations_summary = {'YES': [], 'MAYBE': [], 'NO': []}
+        for part in event.participation_set.all():
+            event.participations_summary[part.answer].append(
+                part.participant.first_name)
             if part.participant == request.user:
-                event.user_part = part
+                event.user_participation = part
             elif part.participant in other_participants:
-                event.parts[other_participants.index(part.participant)] = part
+                p_index = other_participants.index(part.participant)
+                event.other_participations[p_index] = part
+
     context = {'planning': planning,
                'other_participants': other_participants,
                'events': events}

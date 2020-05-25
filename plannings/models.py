@@ -25,6 +25,10 @@ class Planning(EncryptedIDModel):
     def __str__(self):
         return f"Planning {self.name} by {self.creator.email}"
 
+    @property
+    def get_guest_emails(self):
+        return [guest.email for guest in self.guest_emails.all()]
+
     #  TODO: Voir si la fonction peut-être rentable en l'optimisant.
     #   Peut-être en utilisant prefetch_related.
     #   Trop de requête à la base de données pour l'instant,
