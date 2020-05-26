@@ -69,7 +69,6 @@ class DisplayViewTestCase(TestCase):
                                    'participations/protected_planning.html')
 
 
-
     def test_participants_in_context(self):
         response = self.client.get(reverse('participations:view', kwargs={
             'planning_ekey': self.key}))

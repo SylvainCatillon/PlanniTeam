@@ -1,12 +1,18 @@
 from django.contrib.auth.decorators import login_required
+from django.forms import modelform_factory, HiddenInput
 from django.shortcuts import render
 
 from accounts.models import User
+from participations.models import Participation
 from plannings.models import Planning
 
 
+def participate(request):
+    import pdb; pdb.set_trace()
+
 @login_required
 def view_planning(request, planning_ekey):
+    ParticipationForm = modelform_factory(Participation, fields=('answer', 'event'), widgets={'event': HiddenInput()})
     # TODO: gestion de planning inexistant.
     #  get_by_ekey_or_404 ou message custom
     planning = Planning.objects.get_by_ekey(planning_ekey)
@@ -31,7 +37,8 @@ def view_planning(request, planning_ekey):
         # in the same order that the other_participants list.
         # Each item will be the participation if founded, or the default None
         event.other_participations = [None]*len(other_participants)
-        event.user_participation = None
+        event.user_participation = {'answer_choices': Participation.answer_choices}  # FIXME bricolage?
+        event.user_participation_form = ParticipationForm(initial={'event': event.pk})
         # Participations_summary is a dict {answer: list of participants name},
         # to display a summary of the answers in the planning
         event.participations_summary = {'YES': [], 'MAYBE': [], 'NO': []}
@@ -39,7 +46,8 @@ def view_planning(request, planning_ekey):
             event.participations_summary[part.answer].append(
                 part.participant.first_name)
             if part.participant == request.user:
-                event.user_participation = part
+                event.user_participation['answer'] = part.answer  # FIXME bricolage?
+                event.user_participation_form = ParticipationForm(instance=part)
             elif part.participant in other_participants:
                 p_index = other_participants.index(part.participant)
                 event.other_participations[p_index] = part
