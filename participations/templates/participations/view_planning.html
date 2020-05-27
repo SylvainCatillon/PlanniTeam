@@ -1,7 +1,6 @@
 {%  extends 'core/base.html' %}
 {%  block content %}
 <div class="container table-responsive"><h3 class="text-center">{{ planning.name }}</h3>
-{#  <form method="post" action="{% url 'participations:participate' %}">#}
   {% csrf_token %}
   <table class="table table-bordered text-center">
   <thead class="thead-light">
@@ -38,51 +37,31 @@
             <ul class="list-group list-group-flush">
               <li class="list-group-item list-group-item-success">
                 <h5 >Oui</h5>
-                {{ event.participations_summary.YES|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.participations_summary.YES|length }}</span>  #}
+                {{ event.participations_summary.YES|join:", " }}
               </li>
               <li class="list-group-item list-group-item-warning">
                 <h5 >Peut-être</h5>
-                {{ event.participations_summary.MAYBE|join:", " }}{#  <span class="badge badge-primary badge-pill">{{ event.participations_summary.MAYBE|length }}</span>  #}
+                {{ event.participations_summary.MAYBE|join:", " }}
               </li>
               <li class="list-group-item list-group-item-danger">
                 <h5 >Non</h5>
-                {{ event.participations_summary.NO|join:", " }}{# <span class="badge badge-primary badge-pill">{{ event.participations_summary.NO|length }}</span>  #}
+                {{ event.participations_summary.NO|join:", " }}
               </li>
             </ul>
           </div>
         </div>
       </td>
       <td class="align-middle"> {# user column #}
-{#        {%  with participation=event.user_participation %}#}
-{#      <select id="select_event_{{ event.pk }}" name="answer">#}
-{#            <option value="">---------</option>#}
-{#        {% for answer, display in event.user_participation.answer_choices %}#}
-{#          <option value="{{ answer }}" {% if answer == participation.answer %} selected {% endif %}>{{ display }}</option>#}
-{#        {% endfor %}#}
-{#        {% endwith %}#}
-{#      </select>#}
-{#      <input type="hidden" name="event" value="{{ event.pk }}">#}
-
-{#        {{ event.user_participation_form.answer}}#}
-{#        {{ event.user_participation_form.event}}#}
-
         <div class="dropright my-1">
           {%  with participation=event.user_participation %}
-
-  {#          <select>#}
-  {#            <option value="">---------</option>#}
-  {#            <option value="YES">Oui</option>#}
-  {#            <option value="NO">Non</option>#}
-  {#            <option value="MAYBE">Peut-être</option>#}
-  {#          </select>#}
-          <button id="DropAnswerEvent{{ event.pk }}" class="dropdown-toggle btn btn-{{ participation.get_color|default:"info" }}" js-initial-data="{{ participation.answer|default:"New" }}" data-toggle="dropdown" aria-expanded="false">
-              <span>{{ participation.answer|default:"New" }}</span>
+          <button id="DropAnswerEvent{{ event.pk }}" class="dropdown-toggle btn text-white" data-toggle="dropdown" aria-expanded="false" style="background-color: #A0A0A0">
           </button>
-          <form class="dropdown-menu answer_form" js-event-pk="{{ event.pk }}" aria-labelledby="DropAnswerEvent{{ event.pk }}" action="{% url 'participations:participate' %}"> {# TODO: action ou tag js-data pour transmettre l'url au script #}
-{#            {% csrf_token %} {# TODO: placer qu'une seule fois #}
-            {% for answer, display in event.user_participation.answer_choices %}
-            <input type="radio" name="answer" value="{{ answer }}" js-displayed-answer="{{ display }}" id="AnswerChoice{{ forloop.counter }}Event{{ event.pk }}" {% if answer == participation.answer %} checked="checked" {% endif %}>
-            <label for="AnswerChoice{{ forloop.counter }}Event{{ event.pk }}">{{ display }}</label><br>
+          <form class="dropdown-menu answer_form" aria-labelledby="DropAnswerEvent{{ event.pk }}" data-initial-text="{{ participation.get_answer_display }}" data-initial-answer="{{ participation.answer|default:'NONE' }}" >
+            {% for answer, display in answer_choices %}
+            <label  class="dropdown-item" for="Answer{{ answer }}Event{{ event.pk }}">
+              <input type="radio" name="answer" value="{{ answer }}" data-text="{{ display }}" id="Answer{{ answer }}Event{{ event.pk }}" {% if answer == participation.answer %} checked="checked" {% endif %}>
+              <span>{{ display }}</span>
+            </label>
             {% endfor %}
             <input type="hidden" name="event" value="{{ event.pk }}">
           </form>
@@ -90,28 +69,16 @@
         {%  endwith %}
       </td>
         {% for participation in event.other_participations %} {# participants column #}
-          <td class="d-none d-md-table-cell align-middle table-{{ participation.get_color|default:"info" }}">
+          <td class="d-none d-md-table-cell align-middle table-{{ participation.get_color }}">
             <span>{{ participation.get_answer_display }}</span>
           </td>
         {% endfor %}
-
-{#      {% for participation in event.participation_set.all %}#}
-{#        {% if participation.participant != user %}#}
-{#        <td>#}
-{#          <p>{{ participation }}</p>#}
-{#        </td>#}
-{#        {%  endif %}#}
-{#      {% endfor %}#}
-
     </tr>
   {% endfor %}
   </tbody>
   </table>
-<button id="submit_answers" class="btn btn-info">Envoyer</button>
+<button id="submit_answers" class="btn btn-info" data-post-url="{% url 'participations:participate' %}">Envoyer</button>
 <button id="reset_answers" class="btn btn-info">Reset</button>
-{#  <input type="submit" value="Envoyer participation" />#}
-{#  <input type="reset" value="Reset" />#}
-{#  </form>#}
 </div>
 {% endblock %}
 {%  block js %}
@@ -119,51 +86,67 @@
   <script type="text/javascript">
   $(function () {
 
-      $('input[type="radio"][name="answer"]').on('change', function () {
+      const colors = {YES: "#28a745", NO: "#dc3545", MAYBE: "#ffc107", NONE: "#A0A0A0"} {# TODO: Changer par définition CSS/SCSS ou table Answer avec filed Color #}
+
+
+      /*
+      Set the text and the color of the answer's dropdown button, with the
+      values of the checked answer.
+      */
+      function setAnswerDropButton() {
           let $this = $(this),
-              $dropButton = $this.parents('form').siblings('button')
-          $dropButton.text($this.attr('js-displayed-answer'))
-          $dropButton.click()
+              $dropButton = $this.parents(".dropdown-menu").siblings('.dropdown-toggle')
+          $dropButton.text($this.data("text"))
+          $dropButton.css('background-color', colors[$this.val()])
+          $dropButton.dropdown('hide')
+      }
 
-      })
+      /*
+      On page's load, set the answers' dropdown buttons if an answer is already
+      checked.
+      This is set by a script, because firefox keep cached the precedent form change
+      after a page reload.
+       */
+      $('input[type="radio"][name="answer"]:checked').each(setAnswerDropButton)
 
+      // Set the answer's dropdown button on every answer change
+      $('input[type="radio"][name="answer"]').on("change", setAnswerDropButton)
+
+      /*
+      Reset all the answers' forms and their dropdown buttons on reset button click
+       */
       $('#reset_answers').on('click', function () {
           $('.answer_form').each(function (i,e) {
               let $form = $(e),
-                  $button = $form.siblings('button')
-              $form.trigger('reset')
-              $button.text($button.attr('js-initial-data')) {# TODO: refactor. Attention à l'abus de données js- #}
+                  $dropButton = $form.siblings('.dropdown-toggle')
+              $form.trigger("reset")
+              $dropButton.text($form.data("initial-text"))
+              $dropButton.css('background-color', colors[$form.data('initial-answer')])
 
           })
 
       })
 
+      /*
+      On submit button click, gather all the changed answers and put them in
+      the 'data' array as a json string {answer: answer, event: event.pk}.
+      Post the data to the submit url, and reload the page on success
+       */
       $('#submit_answers').on('click', function () {
           let data = $('input[name="csrfmiddlewaretoken"]').serializeArray()
-          {#let answers = [],#}
-          {#  token = $('input[name="csrfmiddlewaretoken"]').serializeArray()#}
           $('.answer_form').each(function (i, e) {
               let $form = $(e),
                   answer = $form.find('input[name="answer"]:checked').val()
-                  //answer = $form.serializeArray()
-              if (answer) {
+              if (answer && answer !== $form.data('initial-answer')) {
                   data.push({name: 'participation', value: JSON.stringify({answer: answer, event: $form.find('input[name="event"]').val()}) })
               }
-
-             /* if(Array.isArray(answer) && answer.length) {
-                  data.push({name: 'participation', value: JSON.stringify({answer: answer[0].value, event: $form.attr('js-event-pk')}) })
-              }*/
-              {#$.each($(e).serializeArray(), function (i, e) {#}
-              {#  console.log(e['name'] === 'answer')#}
-              {#console.log($(e).serializeArray())#}
-              {#console.log(typeof $(e).serializeArray())#}
           })
-          {#token.push(answers)#}
-          console.log(data)
-          {#console.log($('.answer_form').serializeArray())#}
-          {#console.log(typeof $('.answer_form').serializeArray())#}
-
-          $.post('/participations/participate/', data)
+          $.post($(this).data('post-url'), data).done(function (msg) {
+              alert(msg)
+              location.reload()
+          }).fail(function (jqXHR) {
+              alert("Http code "+jqXHR.status+" "+jqXHR.responseText)
+          })
       })
 
   })
