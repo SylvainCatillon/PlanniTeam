@@ -48,6 +48,16 @@ class DisplayViewTestCase(TestCase):
 
     # TODO test_inexistant_planning
 
+    def test_creator_can_access_protected_planning(self):
+        creator = User.objects.get(first_name='Creator')
+        self.client.force_login(creator)
+        response = self.client.get(reverse('participations:view', kwargs={
+            'planning_ekey': self.key}))
+        self.assertTemplateUsed(response,
+                                'participations/view_planning.html')
+        self.assertTemplateNotUsed(response,
+                                   'participations/protected_planning.html')
+
     def test_stranger_cannot_access_protected_planning(self):
         stranger = User.objects.get(first_name='Stranger')
         self.client.force_login(stranger)
