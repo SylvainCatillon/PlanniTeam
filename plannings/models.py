@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from encrypted_id.models import EncryptedIDModel
 
 from accounts.models import User
@@ -32,6 +33,10 @@ class Planning(EncryptedIDModel):
     def user_has_access(self, user):
         return (not self.protected) or (user == self.creator) or \
                (user.email in self.get_guest_emails)
+
+    def get_absolute_url(self):
+        return reverse(
+            'participations:view', args=(str(self.ekey),))
 
     #  TODO: Voir si la fonction peut-être rentable en l'optimisant.
     #   Peut-être en utilisant prefetch_related.
