@@ -1,5 +1,29 @@
 {%  extends 'core/base.html' %}
 {%  block content %}
-  <p>Planning créé</p>
-  <p>{{ link }}</p>
+  <div class="container">
+    <p>Planning créé</p>
+    <a id="PlanningLink" href="{{ link }}">{{ link }}</a></br>
+    <button id="CopyButton" class="btn btn-info">Copier le lien</button>
+  </div>
+{% endblock %}
+{%  block js %}
+{{  block.super }}
+  <script type="text/javascript">
+  $(function () {
+
+      $("#CopyButton").on("click", function () {
+          console.log("hello")
+          console.log($("#PlanningLink").attr("href"))
+          let $temp = $("<input/>")
+          $("body").append($temp)
+          $temp.val($('#PlanningLink').attr("href")).select()
+          console.log($temp.val())
+          document.execCommand("copy")
+          $temp.remove()
+
+      })
+
+
+  })
+  </script>
 {% endblock %}
