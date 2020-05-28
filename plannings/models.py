@@ -29,6 +29,10 @@ class Planning(EncryptedIDModel):
     def get_guest_emails(self):
         return [guest.email for guest in self.guest_emails.all()]
 
+    def user_has_access(self, user):
+        return (not self.protected) or (user == self.creator) or \
+               (user.email in self.get_guest_emails)
+
     #  TODO: Voir si la fonction peut-être rentable en l'optimisant.
     #   Peut-être en utilisant prefetch_related.
     #   Trop de requête à la base de données pour l'instant,

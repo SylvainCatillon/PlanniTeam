@@ -23,8 +23,7 @@ def participate(request):
         #   déjà crée... Use block atomic?
         event = Event.objects.get(pk=participation['event'])
         planning = event.planning
-        if planning.protected and \
-                request.user.email not in planning.get_guest_emails:
+        if not planning.user_has_access(request.user):
             return HttpResponseForbidden()
         Participation.objects.update_or_create(
             participant=request.user, event=event,
@@ -40,8 +39,7 @@ def participate(request):
 @login_required
 def view_planning(request, planning_ekey):
     planning = Planning.objects.get_by_ekey(planning_ekey)
-    if planning.protected and \
-            request.user.email not in planning.get_guest_emails:
+    if not planning.user_has_access(request.user):
         return render(request, 'participations/protected_planning.html')
 
     # Get a list of all the planning's participants, except the current user
