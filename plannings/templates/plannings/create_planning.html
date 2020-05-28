@@ -15,12 +15,18 @@
         </div>
       </div>
     </form>
-    <form id="guests_select_form" class="form-group text-center">
-      <label for="guests_email_select">Emails sélectionnés</label>
-      <select id="guests_email_select" class="form-control mb-2" name="emails_to_delete" multiple></select>
-      <input class="btn btn-danger" type="submit" value="Supprimer">
-      <input class="btn btn-info" type="reset" value="Désélectionner">
-    </form>
+    <div id="GuestsContainer" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px"></div>
+    <div class="dropdown dropup">
+      <button id="DeleteGuestDropdown" class="btn btn-danger mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Supprimer des emails</button>
+      <form id="guests_select_form" class="form-group text-center dropdown-menu" aria-labelledby="DeleteGuestDropdown">
+        <div class="form-group">
+        <label for="guests_email_select">Emails sélectionnés</label>
+        <select id="guests_email_select" class="form-control mb-2" name="emails_to_delete" multiple></select>
+        <input class="btn btn-danger" type="submit" value="Supprimer">
+        <input class="btn btn-info" type="reset" value="Désélectionner">
+        </div>
+      </form>
+    </div>
   </div>
   <div class="dropdown">
     <button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -95,13 +101,17 @@
           */
           let $form = $(this),
               data = $form.serializeArray(),
-              email = data[0].value
-          let $guests_select = $("#guests_email_select")
+              email = data[0].value,
+              $guests_select = $("#guests_email_select"),
+              $guests_container = $('#GuestsContainer')
           if ($guests_select.text().includes(email)) {
               alert("Vous avez déjà indiqué cette adresse")
           } else {
+            $guests_container.append($("<p></p>", {id: email, text: email}))
             $guests_select.append($("<option></option>", {value: email, text: email}))
             $planning_form.append($("<input>", {value: email, hidden: true, name: 'guest_email'}))
+            $guests_container.scrollTop(
+              $guests_container[0].scrollHeight)
           } $form.trigger("reset")
       });
 
@@ -116,6 +126,7 @@
           let data = $(this).serializeArray()
           $.each(data, function (i, field) {
             $('option[value="'+field.value+'"]').remove()
+            $('p[id="'+field.value+'"]').remove()
             $('input[name="guest_email"][value="'+field.value+'"]').remove()
           })
       });
