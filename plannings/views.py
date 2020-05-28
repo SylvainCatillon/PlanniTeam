@@ -77,6 +77,6 @@ def check_event(request):
 def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView en créant link dans create??
     """After a planning was created, displays a page with the access link
     of the planning."""
-    link = request.build_absolute_uri(reverse(
-        'participations:view', args=(planning_ekey,)))  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
+    planning = Planning.objects.get_by_ekey(planning_ekey)
+    link = request.build_absolute_uri(planning.get_absolute_url())  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})

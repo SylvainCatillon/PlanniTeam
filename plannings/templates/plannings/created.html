@@ -11,16 +11,20 @@
   <script type="text/javascript">
   $(function () {
 
+      /*
+      Copy the planning's link in the clipboard when the copy button is clicked
+       */
       $("#CopyButton").on("click", function () {
-          console.log("hello")
-          console.log($("#PlanningLink").attr("href"))
           let $temp = $("<input/>")
           $("body").append($temp)
           $temp.val($('#PlanningLink').attr("href")).select()
-          console.log($temp.val())
-          document.execCommand("copy")
+          let success = document.execCommand("copy")
           $temp.remove()
-
+          if (success) {
+              alert("Lien copié")
+          } else {
+              alert("Erreur, le lien n'a pas pu être copié")
+          }
       })
 
 
