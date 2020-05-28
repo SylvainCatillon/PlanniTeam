@@ -61,6 +61,7 @@ def view_planning(request, planning_ekey):
         # in the same order that the other_participants list.
         # Each item will be the participation if founded, or the default None
         event.other_participations = [None]*len(other_participants)
+        event.user_participation = None
         # Participations_summary is a dict {answer: list of participants name},
         # to display a summary of the answers in the planning
         event.participations_summary = {'YES': [], 'MAYBE': [], 'NO': []}
