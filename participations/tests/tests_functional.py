@@ -72,6 +72,9 @@ class TestFunctionalPlanningParticipation(StaticLiveServerTestCase):
         )
         radio.click()
         self.driver.find_element_by_id('submit_answers').click()
+        WebDriverWait(self.driver, 15).until(EC.alert_is_present(),
+                                             "Timed out waiting for the POST "
+                                             "success alert to appear")
 
         # Assert the answer of the user for the first event has changed,
         # and the second event got a new participation
