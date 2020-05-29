@@ -1,0 +1,52 @@
+{%  extends 'core/base.html' %}
+{%  block content %}
+  <form method="post" action="{% url 'plannings:edit' planning.ekey %}">
+  {{ planning_form.as_p }}
+  {% csrf_token %}
+  {{ event_formset.management_form }}
+{#  {% for form in event_formset.forms %}#}
+{#    {{ form.as_p }}#}
+{#  {% endfor %}#}
+    {% for form in event_formset.forms %}
+  <div class="dropdown">
+  <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto"  style="height: 185px">
+      <h5 class="card-header">{{ form.date.value }}</h5>
+      <div class="card-body">
+          <div class="card-text">{{ form.time.value|default:"" }}</div>
+        <div class="card-text">{{ form.description.value }}</div>
+       <div class="card-text">{{ form.address.value }}</div>
+
+      </div>
+  <button id="event_dropdown{{ forloop.counter0 }}" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+      <span>Modifier</span>
+    </button>
+  <div id="event_form" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown{{ forloop.counter0 }}">
+    <a class="close" onclick="$('#event_dropdown{{ forloop.counter0 }}').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+      {% for field in form %}
+        <div class="form-group">
+            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+            <div class="font-italic">{{ field.help_text|safe }}</div>
+            {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  </div>
+  {% endfor %}
+  {{ event_formset.empty_form.as_p }}
+  <input type="submit" value="submit">
+  </form>
+
+{% endblock %}
+{%  block js %}
+  {{ block.super }}
+  <script type="text/javascript">
+  $(function () {
+      $(".dropdown-toggle").dropdown({boundary: 'viewport'})
+
+  })
+  </script>
+{% endblock %}

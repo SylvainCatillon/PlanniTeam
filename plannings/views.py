@@ -80,3 +80,25 @@ def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView
     planning = Planning.objects.get_by_ekey(planning_ekey)
     link = request.build_absolute_uri(planning.get_absolute_url())  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})
+
+
+def edit_planning(request, planning_ekey):
+    planning = Planning.objects.get_by_ekey(planning_ekey)
+    from django.forms import inlineformset_factory
+    from plannings.models import Event
+    EventInlineFormSet = inlineformset_factory(Planning, Event,
+                                               form=EventCreationForm, extra=1)
+
+    if request.method == 'POST':
+        planning_form = PlanningCreationForm(request.POST, instance=planning)
+        if planning_form.is_valid():
+            planning_form.save()
+            event_formset = EventInlineFormSet(request.POST, instance=planning)
+            if event_formset.is_valid():
+                event_formset.save()
+
+    planning_form = PlanningCreationForm(instance=planning)
+    event_formset = EventInlineFormSet(instance=planning)
+    return render(request, 'test.html', {'event_formset': event_formset,
+                                         'planning_form': planning_form,
+                                         'planning': planning})
