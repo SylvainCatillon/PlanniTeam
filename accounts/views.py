@@ -29,4 +29,8 @@ class CreateView(FormView):
 def profile(request):
     """View of the profile page.
     Redirects to 'login' if the user isn't logged."""
-    return render(request, "accounts/profile.html")
+    user = request.user
+    participated = [event.planning for event in
+                    user.event_set.order_by('planning').distinct('planning')]
+    return render(request, "accounts/profile.html",
+                  {'participated': participated})
