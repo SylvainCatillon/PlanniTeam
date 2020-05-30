@@ -2,7 +2,8 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse, \
+    HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -64,13 +65,15 @@ def check_event(request):
     If it's not, returns the form errors as Json, and the Http code 422.
     Accept only POST request.
     """
+    # import pdb; pdb.set_trace()
     form = EventCreationForm(request.POST)
     if form.is_valid():
-        event = form.save(commit=False)
-        if event:  # TODO: verification inutile, suite à form.is_valid?
-            return JsonResponse(model_to_dict(event))
+        return HttpResponse("Les informations sont valides")
+        # event = form.save(commit=False)
+        # if event:  # TODO: verification inutile, suite à form.is_valid?
+        #     return JsonResponse(model_to_dict(event))
     else:
-        return JsonResponse(form.errors, status=422)
+        return HttpResponse(form.errors.as_json(), status=422)
         # TODO: Change Http error code. 422 ou 400?
 
 

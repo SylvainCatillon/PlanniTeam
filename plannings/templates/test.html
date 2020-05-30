@@ -1,51 +1,168 @@
 {%  extends 'core/base.html' %}
 {%  block content %}
-  <form method="post" action="{% url 'plannings:edit' planning.ekey %}">
+  <div class="container">
+  <form id="planningForm" method="post" action="{% url 'plannings:edit' planning.ekey %}">
   {{ planning_form.as_p }}
   {% csrf_token %}
   {{ event_formset.management_form }}
+{#  <div class="input-group">#}
+{#        <label for="guest_email">Ajouter un Email</label>#}
+{#        <input class="form-control" id="guest_email"  type="email" name="add_guest_email" placeholder="invité@exemple.com" required>#}
+{#        <div class="input-group-append">#}
+{#          <button id="guest_submit" class="btn btn-secondary" >Ajouter</button>#}
+{#        </div>#}
+{#      </div>#}
 {#  {% for form in event_formset.forms %}#}
 {#    {{ form.as_p }}#}
 {#  {% endfor %}#}
+  <div id="created_events_container" class="bg-dark row my-3 p-1 rounded">
     {% for form in event_formset.forms %}
-  <div class="dropdown">
-  <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto"  style="height: 185px">
-      <h5 class="card-header">{{ form.date.value }}</h5>
+  <div class="dropdown mb-1 col-12 col-lg-3">
+  <div class="event_card card overflow-auto" data-prefix="{{ form.prefix }}"  style="height: 185px">
+      <h5 class="card-header" data-field="date"></h5>
       <div class="card-body">
-          <div class="card-text">{{ form.time.value|default:"" }}</div>
-        <div class="card-text">{{ form.description.value }}</div>
-       <div class="card-text">{{ form.address.value }}</div>
+          <div class="card-text" data-field="time"></div>
+        <div class="card-text" data-field="description"></div>
+       <div class="card-text" data-field="address"></div>
 
       </div>
   <button id="event_dropdown{{ forloop.counter0 }}" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
       <span>Modifier</span>
     </button>
-  <div id="event_form" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown{{ forloop.counter0 }}">
+  <div class="event_form dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown{{ forloop.counter0 }}">
     <a class="close" onclick="$('#event_dropdown{{ forloop.counter0 }}').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
       {% for field in form %}
         <div class="form-group">
-            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
+            <ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>
             {{ field.label_tag }}
             {{ field }}
             {% if field.help_text %}
             <div class="font-italic">{{ field.help_text|safe }}</div>
             {% endif %}
         </div>
+
       {% endfor %}
+    <button class="btn btn-info validate_event">Valider</button>
     </div>
   </div>
   </div>
   {% endfor %}
+  <div style="display: none">
   {{ event_formset.empty_form.as_p }}
+  </div>
+  </div>
   <input type="submit" value="submit">
+  <input id="resetPlanning" type="reset" value="reset">
   </form>
-
+  <a class="btn btn-info" href="#">En haut</a>
+</div>
 {% endblock %}
 {%  block js %}
   {{ block.super }}
   <script type="text/javascript">
   $(function () {
       $(".dropdown-toggle").dropdown({boundary: 'viewport'})
+
+      function setEventCard($card) {
+          let $form = $card.parents('form')
+          $card.find(".card-header, .card-text").each(function (i, elem) {
+              let $elem = $(elem),
+                  inputID = "#id_"+$card.data("prefix")+"-"+$elem.data("field"),
+                  $input = $form.find(inputID)
+              $elem.text($input.val())
+
+          })
+          if ($form.find('#id_'+$card.data("prefix")+'-DELETE').prop("checked")) {
+              $card.css("background-color", "#A0A0A0")
+          } else {
+              $card.css("background-color", "#ffa34d")
+          }
+      }
+
+      $(".event_card").each(function () {
+          setEventCard($(this))
+
+      })
+
+      $("#planningForm").on("reset", function (event) {
+          setTimeout(function () {
+              $(".event_card").each(function () {
+                  setEventCard($(this))
+
+          }, 1)
+
+          })
+
+      })
+
+      /* TODO A voir si utile. Peut-etre setEventCard uniquement sur la carte qui vient de changer
+      $("#planningForm").on("change", function () {
+          $(".event_card").each(function () {
+            setEventCard($(this))
+
+          })
+      })*/
+
+
+      $('.validate_event').on('click', function (event) {
+          event.preventDefault()
+
+
+          let $eventFormContainer = $(this).parents(".event_form"),
+              data = $('input[name="csrfmiddlewaretoken"]').serializeArray(),
+              $card = $(this).parents('.card'),
+              prefix = $eventFormContainer.parents(".card").data("prefix")+"-";
+          $eventFormContainer.find(".field_errors li").each(function (i, error) {
+              error.remove()
+          });
+          console.log($eventFormContainer.parents(".card").data("prefix"))
+          $eventFormContainer.find('input').each(function () {
+              let value = $(this).serializeArray()[0]
+              if (value) {
+                  value.name = value.name.replace(prefix,"")
+                  data.push(value)
+              }
+
+          })
+          console.log(data)
+          $.post(location.origin+'/plannings/check_event/', data).done(function (response) {
+                setEventCard($card)
+                alert(response)
+
+          }).fail(function (jqXHR) {
+              if (jqXHR.status === 422) {
+                  let data = JSON.parse(jqXHR.responseText)
+                  $.each(data, function (field) {
+                      let $errorsContainer = $("#id_" + prefix + field + "_errors"),
+                          $input = $("#id_" + prefix + field)
+                      console.log($input)
+                      console.log(function () {
+                          return this.defaultValue
+
+                      })
+                      $input.val(function () {
+                          return this.defaultValue
+
+                      })
+                      $.each(data[field], function (i, error) {
+                          $errorsContainer.append($('<li>' + error.message + '</li>'))
+
+                      })
+                  })
+          } else {
+              alert("Une erreur s'est produite, veuillez réessayer. Erreur HTTP "+jqXHR.status)
+          }
+
+          })
+
+      })
+
+      $('#guest_submit').on("click", function (event) {
+          event.preventDefault()
+          console.log($('#guest_email').val())
+
+      })
+
 
   })
   </script>
