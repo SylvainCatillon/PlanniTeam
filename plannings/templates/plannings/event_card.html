@@ -1,0 +1,14 @@
+<div class="event_card_container mb-1 col-12 col-lg-3">
+  <div class="event_card card"  style="height: 185px">
+      <h5 class="card-header" data-field="date"></h5>
+      <div class="card-body overflow-auto">
+          <div class="card-text" data-field="time"></div>
+        <div class="card-text" data-field="description"></div>
+       <div class="card-text" data-field="address"></div>
+
+      </div>
+    {%  if form_display %}
+      {% include 'plannings/event_form.html' %}
+    {% endif %}
+  </div>
+  </div>

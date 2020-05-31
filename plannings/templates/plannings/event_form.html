@@ -1,0 +1,21 @@
+<button id="{{ form.prefix}}-event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+  <span>{{ button_text }}</span>
+</button>
+<div class="event_form dropdown-menu bg-light px-4 py-3" aria-labelledby="{{ form.prefix}}-event_dropdown" data-prefix="{{ form.prefix }}">
+  <a class="close" onclick="$('#{{ form.prefix}}-event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+    {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+    {% endfor %}
+    {% for field in form.visible_fields %}
+      <div class="form-group">
+          <ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}
+          <div class="font-italic">{{ field.help_text|safe }}</div>
+          {% endif %}
+      </div>
+
+    {% endfor %}
+  <button class="btn btn-info validate_event">Valider</button>
+</div>

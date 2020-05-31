@@ -90,7 +90,7 @@ def edit_planning(request, planning_ekey):
     from django.forms import inlineformset_factory
     from plannings.models import Event
     EventInlineFormSet = inlineformset_factory(Planning, Event,
-                                               form=EventCreationForm, extra=1)
+                                               form=EventCreationForm, extra=0)
 
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST, instance=planning)
