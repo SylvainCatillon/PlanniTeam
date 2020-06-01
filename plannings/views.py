@@ -96,6 +96,25 @@ def edit_planning(request, planning_ekey):
         planning_form = PlanningCreationForm(request.POST, instance=planning)
         if planning_form.is_valid():
             planning_form.save()
+            # TODO: if is protected? Ou permetrre de modifier les emails
+            #  quand même?
+            old_emails = planning.get_guest_emails
+            new_emails = request.POST.getlist('guest_email')
+            for email in new_emails:
+                if email in old_emails:
+                    old_emails.remove(email)
+                    new_emails.remove(email)
+
+            for del_email in old_emails:
+                planning.guest_emails.filter(email=del_email).delete()
+
+            for new_email in new_emails:
+                try:
+                    planning.guest_emails.add(
+                        GuestEmail.objects.get(email=new_email))
+                except GuestEmail.DoesNotExist:
+                    planning.guest_emails.create(email=new_email)
+
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
                 event_formset.save()

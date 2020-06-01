@@ -21,6 +21,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         cls.selenium = WebDriver()
         cls.selenium.implicitly_wait(15)
 
+
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
@@ -100,6 +101,8 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
     def setUp(self):
         self.planning = Planning.objects.first()
         self.user = User.objects.get(first_name='Creator')
+        self.path = self.live_server_url + reverse('plannings:edit', kwargs={
+            'planning_ekey': self.planning.ekey})
 
         # Set the cookies to fake a user login
         self.client.force_login(self.user)  # TODO: Créer une fonction login dans utils
@@ -148,9 +151,7 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
         for key, value in new_attrs.items():
             self.assertNotEqual(value, getattr(event1, key))
 
-        path = self.live_server_url + reverse('plannings:edit', kwargs={
-            'planning_ekey': self.planning.ekey})
-        self.driver.get(path)
+        self.driver.get(self.path)
 
         # Modify the first event
         self.driver.find_element_by_id(
@@ -191,9 +192,7 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
         event3_date = '2020-04-04'
         event3_modified_description = 'Modified descripiton'
 
-        path = self.live_server_url + reverse('plannings:edit', kwargs={
-            'planning_ekey': self.planning.ekey})
-        self.driver.get(path)
+        self.driver.get(self.path)
 
         # Add event1
         self.add_event(event1_attrs)
@@ -245,3 +244,33 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
         event3 = self.planning.event_set.get(date=event3_date)
         self.assertEqual(event3_modified_description, event3.description)
 
+    @tag('selenium')
+    def test_modify_guests(self):
+        # Set the test data
+        old_guests = self.planning.get_guest_emails
+        email_to_delete = old_guests[0]
+        email_to_add = 'newparticipant@test.com'
+        email_to_add_then_delete = 'fail@test.com'
+
+        self.driver.get(self.path)
+
+        # Add some emails
+        add_input = self.driver.find_element_by_id('guest_email')
+        add_submit = self.driver.find_element_by_id('guest_submit')
+        for email in [email_to_add, email_to_add_then_delete]:
+            add_input.send_keys(email)
+            add_submit.click()
+        # Delete some emails
+        self.driver.find_element_by_id("DeleteGuestDropdown").click()
+        for email in [email_to_delete, email_to_add_then_delete]:
+            self.driver.find_element_by_xpath(
+                "//option[@value='" + email + "']").click()
+        self.driver.find_element_by_id("delete_guest_submit").click()
+        # Send the form
+        self.driver.find_element_by_id("planning_submit").click()
+
+        # Test the result
+        new_guests = self.planning.get_guest_emails
+        self.assertNotIn(email_to_delete, new_guests)
+        self.assertNotIn(email_to_add_then_delete, new_guests)
+        self.assertIn(email_to_add, new_guests)

@@ -7,6 +7,13 @@
     }
 },
 {
+    "model": "plannings.guestemail",
+    "pk": 2,
+    "fields": {
+        "email": "participant2@test.com"
+    }
+},
+{
     "model": "plannings.planning",
     "pk": 1,
     "fields": {
@@ -16,7 +23,7 @@
         "name": "Test",
         "protected": true,
         "guest_emails": [
-            1
+            1, 2
         ]
     }
 },

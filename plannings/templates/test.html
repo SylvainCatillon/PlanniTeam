@@ -5,13 +5,37 @@
   {{ planning_form.as_p }}
   {% csrf_token %}
   {{ event_formset.management_form }}
-{#  <div class="input-group">#}
-{#        <label for="guest_email">Ajouter un Email</label>#}
-{#        <input class="form-control" id="guest_email"  type="email" name="add_guest_email" placeholder="invité@exemple.com" required>#}
-{#        <div class="input-group-append">#}
-{#          <button id="guest_submit" class="btn btn-secondary" >Ajouter</button>#}
-{#        </div>#}
-{#      </div>#}
+  <div id="guests_container" {# style="display: none" #}>
+    <div id="guest_emails_form">
+      <div class="input-group">
+        <input class="form-control" id="guest_email"  type="email" name="add_guest_email" placeholder="invité@exemple.com">
+        <div class="input-group-append">
+          <button id="guest_submit" class="btn btn-secondary">Ajouter cet email</button>
+{#          <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter cet email">#}
+        </div>
+      </div>
+    </div>
+    <div id="GuestsContainer" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px">
+      {% for email in planning.guest_emails.all %}
+      <p id="{{ email }}">{{ email }}</p> {# TODO: changer id #}
+      {% endfor %}
+    </div>
+    <div class="dropup">
+      <button id="DeleteGuestDropdown" class="btn btn-danger mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Supprimer des emails</button>
+      <div id="guests_select_form" class="form-group text-center dropdown-menu" aria-labelledby="DeleteGuestDropdown">
+        <div class="form-group">
+        <label for="guests_email_select">Emails sélectionnés</label>
+        <select id="guests_email_select" class="form-control mb-2" name="emails_to_delete" multiple>
+          {% for email in planning.guest_emails.all %}
+          <option value="{{ email }}">{{ email }}</option>
+          {% endfor %}
+        </select>
+          <button id="delete_guest_submit" class="btn btn-danger">Supprimer ces emails</button>
+{#          <input id="delete_guest_submit" class="btn btn-danger" type="submit" value="Supprimer">#}
+        </div>
+      </div>
+    </div>
+  </div>
 {#  {% for form in event_formset.forms %}#}
 {#    {{ form.as_p }}#}
 {#  {% endfor %}#}
@@ -31,6 +55,9 @@
   </div>
   <input id="planning_submit" type="submit" value="submit">
 {# TODO  <input id="resetPlanning" type="reset" value="reset">#}
+  {% for email in planning.guest_emails.all %}
+      <input type="hidden" value="{{ email }}" name="guest_email">
+  {% endfor %}
   </form>
   <div class="alert alert-success" id="success-alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
     <button type="button" class="close" data-dismiss="alert">x</button>
@@ -88,6 +115,53 @@
 
           })
       })*/
+
+      /*
+      When the guest email input is submitted:
+      -check if the guest's email is already added
+      -add an option with the email as value to the guest's email select elem
+      -add a hidden input with the guest's email as value
+       */
+      $("#guest_submit").on("click", function (event) {
+          event.preventDefault()
+          /*
+          Get the data from the form. If the form has more input, a function to
+           retrieve the exact input can be used: data.reduce(function(obj, item)
+           { obj[item.name] = item.value; return obj;}, {} )['add_guest_email']
+          */
+          let $input = $('input[name="add_guest_email"]'),
+              email = $input.val(),
+              $guests_select = $("#guests_email_select"),
+              $guests_container = $('#GuestsContainer')
+          if ($guests_select.text().includes(email)) {
+              alert("Vous avez déjà indiqué cette adresse")
+          } else if (!$input[0].checkValidity()) {
+              alert("Veuillez rentrez une adresse email valide")
+          }
+          else {
+            $guests_container.append($("<p></p>", {id: email, text: email}))
+            $guests_select.append($("<option></option>", {value: email, text: email}))
+            $('#planningForm').append($("<input>", {value: email, type: "hidden", name: 'guest_email'}))
+            $guests_container.scrollTop(
+              $guests_container[0].scrollHeight)
+          } $input.val("")
+      });
+
+      /*
+      For each selected guest email option:
+      -Remove the associate hidden input
+      -Remove the option
+       */
+      $("#delete_guest_submit").on("click", function (event) {
+          event.preventDefault()
+          let data = $('#guests_email_select').serializeArray()
+          console.log(data)
+          $.each(data, function (i, field) {
+            $('option[value="'+field.value+'"]').remove()
+            $('p[id="'+field.value+'"]').remove()
+            $('input[name="guest_email"][value="'+field.value+'"]').remove()
+          })
+      });
 
       function validExistingEvent($card) {
           setEventCard($card)

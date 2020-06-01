@@ -108,8 +108,8 @@ class PlanningCreationViewTest(TestCase):
                                     event_args) # is post the good method?
         self.assertEqual(response.status_code, 422)
         errors = json.loads(response.content)
-        self.assertEqual(errors['date'], [_('Enter a valid date.')])
-        self.assertEqual(errors['time'], [_('Enter a valid time.')])
+        self.assertEqual(errors['date'], [{'message': _('Enter a valid date.'), 'code': 'invalid'}])
+        self.assertEqual(errors['time'], [{'message': _('Enter a valid time.'), 'code': 'invalid'}])
 
     def test_event_check(self):
         event_args = {'date': '2020-12-07', 'time': '18:30:00',
