@@ -17,7 +17,7 @@
 {#  {% endfor %}#}
   <div id="newEventContainer">
   {% with form=event_formset.empty_form %}
-    {% include 'plannings/event_form.html' with button_text='Ajouter un événement' %}
+    {% include 'plannings/event_form.html' with button_text='Ajouter un événement' hidde_delete=True %}
   </div>
   <div id="created_events_container" class="bg-dark row my-3 p-1 rounded">
   {% include 'plannings/event_card.html' with form_display=False %}
@@ -29,8 +29,8 @@
 {#  {{ event_formset.empty_form.as_p }}#}
 {#  </div>#}
   </div>
-  <input type="submit" value="submit">
-  <input id="resetPlanning" type="reset" value="reset">
+  <input id="planning_submit" type="submit" value="submit">
+{# TODO  <input id="resetPlanning" type="reset" value="reset">#}
   </form>
   <div class="alert alert-success" id="success-alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
     <button type="button" class="close" data-dismiss="alert">x</button>
@@ -69,7 +69,7 @@
 
       })
 
-      $("#planningForm").on("reset", function (event) {
+      /* TODO $("#planningForm").on("reset", function (event) {
           setTimeout(function () {
               $(".event_card").each(function () {
                   setEventCard($(this))
@@ -79,7 +79,7 @@
 
           })
 
-      })
+      })*/
 
       /* TODO A voir si utile. Peut-etre setEventCard uniquement sur la carte qui vient de changer
       $("#planningForm").on("change", function () {
@@ -92,6 +92,7 @@
       function validExistingEvent($card) {
           setEventCard($card)
           $card.find('.dropdown-toggle').dropdown('hide')
+          {# TODO: choisir append, prepend ou rien. $card.parent().appendTo($('#created_events_container'))#}
           $("#success-alert").fadeTo(2000, 500).slideUp(500, function() {
               $("#success-alert").slideUp(500);
           });
@@ -105,10 +106,6 @@
               $container = $('#modelEvent'),
               $card = $container.find('.card'),
               form_number = $('input[name$="TOTAL_FORMS"]').val()
-          console.log($formContainer)
-          console.log($form)
-          console.log($button)
-          console.log(form_number)
           {#$button.text('Modifier')#}
           $formContainer.html($formContainer.html().replace(/__prefix__/g, form_number))
           $card.append($formContainer.find('.dropdown-toggle'), [$formContainer.find('.event_form')])
@@ -118,23 +115,30 @@
           let $formContainer = $form.parent(),
               $container = $('#modelEvent').clone(),
               $card = $container.find('.card'),
-              $total_form = $('input[name$="TOTAL_FORMS"]'),
-              form_number = $total_form.val()
+              formset_prefix = $form.data('prefix').replace(/__prefix__/g, ""),
+              $total_forms = $('input[name="'+formset_prefix+'TOTAL_FORMS"]'),
+              form_number = $total_forms.val()
+
           $card.append($formContainer.html().replace(/__prefix__/g, form_number))
+          {#console.log(document.getElementById("id_event_set-__prefix__-DELETE"))#}
 
           // Set the new event dropdown button
           let $dropdownButton = $card.find('.dropdown-toggle')
           $dropdownButton.text('Modifier')
           $dropdownButton.dropdown({boundary: 'viewport'})
+          {#console.log(document.getElementById("id_event_set-__prefix__-DELETE"))#}
+
 
           // Set the data of the new event form and card
           $.each(data, function () {
-                  let $input = $card.find('[name$="'+this.name+'"]')
-                  if ($input.length && $input.attr('type') !== "hidden") {
-                      $input.attr('value', this.value)
-                  }
+              let $input = $card.find('[name$="'+this.name+'"]')
+              if ($input.length && $input.attr('type') !== "hidden") {
+                  $input.val(this.value)
+              }
 
-              })
+          })
+          // Show the delete input and label
+          $card.find('[name$="DELETE"]').parent().show()
           setEventCard($card)
 
           //Set the onClick function of validate event button
@@ -146,14 +150,21 @@
 
           //Reset the 'add event' form
           $formContainer.find('input, textarea').each(function () {
-              let $this = $(this)
-              if ($this.attr('type') !== "hidden") {
+              let $this = $(this),
+                  type = $this.attr('type')
+              if ($this.val() && type !== "hidden") {
+                  if (type === 'checkbox') {
+                      $this.prop('checked', false)
+                  } else {
                       $this.val("")
                   }
+              }
 
           })
+          {#console.log(document.getElementById("id_event_set-__prefix__-DELETE"))#}
 
-          $total_form.val(parseInt(form_number) + 1)
+          // Increase the value of the TOTAL_FORMS input
+          $total_forms.val(parseInt(form_number) + 1)
 
           $("#created_events_container").append($container)
           $container.removeAttr("id").show()
@@ -185,19 +196,25 @@
       }
 
       function validateEvent($eventFormContainer) {
+          {#console.log(document.getElementById("id_event_set-__prefix__-DELETE"))#}
           let data = $('input[name="csrfmiddlewaretoken"]').serializeArray(),
               prefix = $eventFormContainer.data("prefix")+"-";
           $eventFormContainer.find(".field_errors li").each(function (i, error) {
               error.remove()
           });
-          $eventFormContainer.find('input, textarea').each(function () {
-              let value = $(this).serializeArray()[0]
-              if (value) {
-                  value.name = value.name.replace(prefix,"")
-                  data.push(value)
-              }
 
+
+
+          $eventFormContainer.find('input, textarea').each(function () {
+              if ($(this).val()) {
+                  let value = $(this).serializeArray()[0]
+                  if (value) {
+                    value.name = value.name.replace(prefix,"")
+                    data.push(value)
+                  }
+              }
           })
+
           {#console.log(data)#}
           $.post(location.origin+'/plannings/check_event/', data).done(function (response) {
               if (prefix.includes('__prefix__')) {
@@ -225,7 +242,7 @@
               alert("Une erreur s'est produite, veuillez réessayer. Erreur HTTP "+jqXHR.status)
           }
 
-          })
+          });
       }
 
       $('.validate_event').on('click', function (event) {
@@ -269,7 +286,6 @@
               })
               setEventCard($card)
               $cardContainer.removeAttr("id").show()
-              console.log($newModel)
               $('#created_events_container').append($newModel)
               {#setEventCard($card)#}
               {#$card.find('.dropdown-toggle').dropdown('hide')#}
