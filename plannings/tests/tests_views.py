@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
 from plannings.models import Planning
-from plannings.forms import EventInlineFormSet
+from plannings.forms import EventInlineFormSet, PlanningCreationForm
 
 
 class PlanningCreationViewTest(TestCase):
@@ -214,3 +214,82 @@ class PlanningCreationViewTest(TestCase):
                     else:
                         self.assertEqual(getattr(created_event, key),
                                          value)
+
+
+class PlanningEditionViewTest(TestCase):
+    fixtures = ['users', 'plannings']
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.get(first_name='Creator')
+        cls.planning = Planning.objects.first()
+        cls.url = reverse('plannings:edit',
+                          kwargs={'planning_ekey': cls.planning.ekey})
+        cls.prefix = EventInlineFormSet.get_default_prefix()
+        cls.events_data = [
+            {'date': '2020-12-05', 'time': '',
+             'description': '', 'address': ''},
+            {'date': '2020-12-06', 'time': '18:05:00',
+             'description': '', 'address': ''},
+            {'date': '2020-12-07', 'time': '18:30:00',
+             'description': 'A pretty long description with specials '
+                            'char as = and & and # or è, é, %, ?!, *,'
+                            '$,},@,+256...',
+             'address': ''},
+            {'date': '2020-12-08', 'time': '20:00:00',
+             'description': 'This is description',
+             'address': '2 boulevard something'}
+        ]
+        cls.event_setform_data = {
+            cls.prefix+'-TOTAL_FORMS': 0,
+            cls.prefix+'-INITIAL_FORMS': '0',
+            cls.prefix+'-MAX_NUM_FORMS': '',
+        }
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_redirect_if_not_logged(self):
+        self.client.logout()
+        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            f'/accounts/login/?next=/plannings/edit/{self.planning.ekey}/')
+
+    def test_stranger_cant_access(self):
+        user = User.objects.get(first_name="Stranger")
+        self.client.force_login(user)
+        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            f'/accounts/login/?next=/plannings/edit/{self.planning.ekey}/')
+
+    def test_participant_cant_access(self):
+        user = User.objects.get(first_name="Participant")
+        self.client.force_login(user)
+        response = self.client.get(self.url)
+        self.assertRedirects(
+            response,
+            f'/accounts/login/?next=/plannings/edit/{self.planning.ekey}/')
+
+    def test_get_edition_page_by_url(self):
+        response = self.client.get(f'/plannings/edit/{self.planning.ekey}/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_edition_page_by_name(self):
+        response = self.client.get(
+            reverse('plannings:edit',
+                    kwargs={'planning_ekey': self.planning.ekey}))
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_uses_correct_template(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'plannings/create_planning.html')
+
+    def test_context(self):
+        response = self.client.get(self.url)
+        context = response.context
+        self.assertIsInstance(context['planning_form'], PlanningCreationForm)
+        self.assertIsInstance(context['event_formset'], EventInlineFormSet)

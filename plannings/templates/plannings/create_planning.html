@@ -16,7 +16,11 @@
       </div>
     </div>
 
-    <div id="guests_display" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px"></div>
+    <div id="guests_display" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px">
+      {% for email in planning_form.instance.guest_emails.all %}
+      <p id="{{ email }}">{{ email }}</p> {# TODO: changer id #}
+      {% endfor %}
+    </div>
 
 
     <div class="dropup">
@@ -25,7 +29,11 @@
         <a class="close" onclick="$('#delete_guest_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
         <div class="form-group">
         <label for="guest_emails_select">Emails sélectionnés</label>
-        <select id="guest_emails_select" class="form-control mb-2" name="emails_to_delete" multiple></select>
+        <select id="guest_emails_select" class="form-control mb-2" name="emails_to_delete" multiple>
+          {% for email in planning_form.instance.guest_emails.all %}
+          <option value="{{ email }}">{{ email }}</option>
+          {% endfor %}
+        </select>
         <button id="delete_guest_submit" class="btn btn-danger">Supprimer ces emails</button>
 {#        <input class="btn btn-danger" type="submit" value="Supprimer">#}
 {#        <input class="btn btn-info" type="reset" value="Désélectionner">#}
@@ -46,10 +54,18 @@
   <div id="created_events_container"
        class="bg-dark row my-3 p-1 rounded overflow-auto
        row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5"
-       style="height: 200px">
+       style="height: 200px"
+  >
+    {% for form in event_formset.forms %}
+    {% include 'plannings/event_card.html' with display_form=True button_text='Modifier' %}
+    {% endfor %}
   </div>
 
   <input id="planning_submit" class="btn btn-primary btn-lg btn-block" type="submit" value="Créer le planning">
+
+  {% for email in planning_form.instance.guest_emails.all %}
+    <input type="hidden" value="{{ email }}" name="guest_email">
+  {% endfor %}
 </form>
 <div class="alert alert_success" id="success-alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
   <button type="button" class="close" data-dismiss="alert">x</button>
@@ -80,6 +96,17 @@
           }
       }
 
+      // Set the data of the instance events
+      $("#created_events_container .event_card").each(function () {
+          setEventCard($(this))
+          {#console.log($(this))#}
+          {#console.log(this)#}
+      })
+
+      // TODO: vérifier condition ci-dessous
+      if ($('#id_protected').prop("checked")){
+          $("#edit_guests_container").show()
+      }
       /*
       Show the options to choose guests only if input 'protected' is checked
       */

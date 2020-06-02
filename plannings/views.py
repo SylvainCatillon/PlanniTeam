@@ -84,3 +84,51 @@ def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView
     planning = Planning.objects.get_by_ekey(planning_ekey)
     link = request.build_absolute_uri(planning.get_absolute_url())  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
     return render(request, 'plannings/created.html', {'link': link})
+
+
+@login_required
+def edit_planning(request, planning_ekey):
+    planning = Planning.objects.get_by_ekey(planning_ekey) # TODO or 404?
+    self_url = reverse('plannings:edit', # TODO method django?
+                       kwargs={'planning_ekey': planning_ekey})
+    if request.user != planning.creator:
+        redirect_url = f"{reverse('accounts:login')}?next={self_url}"
+        return HttpResponseRedirect(redirect_url)
+
+    if request.method == 'POST':
+        planning_form = PlanningCreationForm(request.POST, instance=planning)
+        if planning_form.is_valid():
+            planning_form.save()
+            if planning.protected:
+                old_emails = planning.get_guest_emails  # TODO: factoriser
+                new_emails = request.POST.getlist('guest_email')
+                for email in new_emails:
+                    if email in old_emails:
+                        old_emails.remove(email)
+                        new_emails.remove(email)
+
+                for del_email in old_emails:
+                    planning.guest_emails.filter(email=del_email).delete()
+
+                for new_email in new_emails:
+                    try:
+                        planning.guest_emails.add(
+                            GuestEmail.objects.get(email=new_email))
+                    except GuestEmail.DoesNotExist:
+                        planning.guest_emails.create(email=new_email)
+
+            event_formset = EventInlineFormSet(request.POST, instance=planning)
+            if event_formset.is_valid():
+                event_formset.save()
+
+            # TODO: remplacer par shortcut redirect(). Changer redirect
+            return HttpResponseRedirect(reverse(
+                'plannings:created', kwargs={'planning_ekey': planning.ekey}))
+
+    planning_form = PlanningCreationForm(instance=planning)
+    event_formset = EventInlineFormSet(instance=planning)
+    return render(request,
+                  'plannings/create_planning.html',
+                  {'event_formset': event_formset,
+                   'planning_form': planning_form,
+                   'form_url': self_url})
