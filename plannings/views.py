@@ -55,7 +55,9 @@ def create_planning(request):
     else:
         planning_form = PlanningCreationForm(initial={'creator': request.user.pk})
     event_formset = EventInlineFormSet()
-    context = {'planning_form': planning_form, 'event_formset': event_formset}
+    context = {'planning_form': planning_form,
+               'event_formset': event_formset,
+               'form_url': reverse('plannings:create')}
     return render(request, 'plannings/create_planning.html', context)
 
 

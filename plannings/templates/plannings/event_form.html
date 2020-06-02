@@ -1,0 +1,20 @@
+<button id="id_{{ form.prefix }}-event_dropdown" class="btn btn-secondary mt-1 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+  <span>{{ button_text }}</span>
+</button>
+<div class="event_form dropdown-menu bg-light px-3 py-2" aria-labelledby="id_{{ form.prefix}}-event_dropdown" data-prefix="{{ form.prefix }}">
+  <a class="close" onclick="$('#id_{{ form.prefix}}-event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+    {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+    {% endfor %}
+    {% for field in form.visible_fields %}
+      <div class="form-group" {% if hide_delete and 'DELETE' in field.name %}style="display: none"{% endif %}>
+          <ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}
+          <div class="font-italic">{{ field.help_text|safe }}</div>
+          {% endif %}
+      </div>
+    {% endfor %}
+  <button id="id_{{ form.prefix}}-validate" class="btn btn-info validate_event">Valider</button>
+</div>
