@@ -20,3 +20,7 @@ class EventCreationForm(forms.ModelForm):
         widgets = {'date': forms.DateInput(attrs={'placeholder': 'AAAA-MM-JJ'}),
                    'time': forms.TimeInput(attrs={'placeholder': 'HH:MM'})}
         fields = ['date', 'time', 'description', 'address']
+
+
+EventInlineFormSet = forms.inlineformset_factory(
+    Planning, Event, form=EventCreationForm, extra=0)

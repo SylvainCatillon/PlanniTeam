@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
 from plannings.models import Planning
+from plannings.forms import EventInlineFormSet
 
 
 class PlanningCreationViewTest(TestCase):
@@ -15,6 +16,26 @@ class PlanningCreationViewTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.get(first_name='Creator')
+        cls.prefix = EventInlineFormSet.get_default_prefix()
+        cls.events_data = [
+            {'date': '2020-12-05', 'time': '',
+             'description': '', 'address': ''},
+            {'date': '2020-12-06', 'time': '18:05:00',
+             'description': '', 'address': ''},
+            {'date': '2020-12-07', 'time': '18:30:00',
+             'description': 'A pretty long description with specials '
+                            'char as = and & and # or è, é, %, ?!, *,'
+                            '$,},@,+256...',
+             'address': ''},
+            {'date': '2020-12-08', 'time': '20:00:00',
+             'description': 'This is description',
+             'address': '2 boulevard something'}
+        ]
+        cls.event_setform_data = {
+            cls.prefix+'-TOTAL_FORMS': 0,
+            cls.prefix+'-INITIAL_FORMS': '0',
+            cls.prefix+'-MAX_NUM_FORMS': '',
+        }
 
     def setUp(self):
         self.client.force_login(self.user)
@@ -54,21 +75,21 @@ class PlanningCreationViewTest(TestCase):
             'choices.'))
 
     def test_create_minimal_planning(self):
-        name = 'Test'
-        response = self.client.post(reverse('plannings:create'),
-                                    {'name': name, 'creator': self.user.pk})
-        planning = Planning.objects.get(name=name)
+        params = dict(self.event_setform_data,
+                      name='Test', creator=self.user.pk)
+        response = self.client.post(reverse('plannings:create'), params)
+        planning = Planning.objects.get(name=params['name'])
         self.assertIn(planning, self.user.planning_created.all())
         self.assertFalse(planning.protected)
         self.assertRedirects(response, reverse('plannings:created', kwargs={
             'planning_ekey': planning.ekey}))
 
     def test_create_protected_planning_without_guests(self):
-        name = 'Test'
-        response = self.client.post(
-            reverse('plannings:create'),
-            {'name': name, 'creator': self.user.pk, 'protected': True})
-        planning = Planning.objects.get(name=name)
+        params = dict(self.event_setform_data,
+                      name='Test', creator=self.user.pk,
+                      protected=True)
+        response = self.client.post(reverse('plannings:create'), params)
+        planning = Planning.objects.get(name=params['name'])
         self.assertIn(planning, self.user.planning_created.all())
         self.assertTrue(planning.protected)
         self.assertQuerysetEqual(planning.guest_emails.all(), [])
@@ -79,8 +100,9 @@ class PlanningCreationViewTest(TestCase):
         guest_emails = ["participant@test.com",
                         "participant2@test.com",
                         "participant3@test.com"]
-        params = {'name': 'Test', 'protected': True,
-                  'guest_email': guest_emails, 'creator': self.user.pk}
+        params = dict(self.event_setform_data,
+                      name='Test', creator=self.user.pk,
+                      protected=True, guest_email=guest_emails)
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
 
@@ -105,13 +127,22 @@ class PlanningCreationViewTest(TestCase):
                                      '$,},@,+256...',
                       'address': '10 boulevard something, 75010 Paris'}
         response = self.client.post(reverse('plannings:check_event'),
-                                    event_args) # is post the good method?
+                                    event_args)
         self.assertEqual(response.status_code, 422)
         errors = json.loads(response.content)
-        self.assertEqual(errors['date'], [_('Enter a valid date.')])
-        self.assertEqual(errors['time'], [_('Enter a valid time.')])
+        self.assertEqual(errors['date'], [
+            {'message': _('Enter a valid date.'), 'code': 'invalid'}])
+        self.assertEqual(errors['time'], [
+            {'message': _('Enter a valid time.'), 'code': 'invalid'}])
 
-    def test_event_check(self):
+    def test_event_check_empty_data(self):
+        response = self.client.post(reverse('plannings:check_event'), {})
+        self.assertEqual(response.status_code, 422)
+        errors = json.loads(response.content)
+        self.assertEqual(errors['date'], [
+            {'message': _('This field is required.'), 'code': 'required'}])
+
+    def test_event_check_valid_data(self):
         event_args = {'date': '2020-12-07', 'time': '18:30:00',
                       'description': 'A pretty long description with specials '
                                      'char as = and & and # or è, é, %, ?!, *,'
@@ -120,32 +151,14 @@ class PlanningCreationViewTest(TestCase):
         response = self.client.post(reverse('plannings:check_event'),
                                     event_args)
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        for key, value in event_args.items():
-            self.assertEqual(data[key], value)
 
     def test_create_with_event(self):
-        event_dict = [
-            {'date': '2020-12-05', 'time': '',
-             'description': '', 'address': ''},
-            {'date': '2020-12-06', 'time': '18:05:00',
-             'description': '', 'address': ''},
-            {'date': '2020-12-07', 'time': '18:30:00',
-             'description': 'A pretty long description with specials '
-                                  'char as = and & and # or è, é, %, ?!, *,'
-                                  '$,},@,+256...',
-             'address': ''},
-            {'date': '2020-12-08', 'time': '20:00:00',
-             'description': 'This is description',
-             'address': '2 boulevard something'}
-        ]
-        event_list = []
-        for event_args in event_dict:
-            response = self.client.post(reverse('plannings:check_event'),
-                                        event_args)
-            self.assertEqual(response.status_code, 200)
-            event_list.append(response.content)
-        params = {'name': 'Test', 'event': event_list, 'creator': self.user.pk}
+        for i, event in enumerate(self.events_data):
+            self.event_setform_data[self.prefix+'-TOTAL_FORMS'] += 1
+            for key, value in event.items():
+                self.event_setform_data[f"{self.prefix}-{i}-{key}"] = value
+        params = dict(self.event_setform_data,
+                      name='Test', creator=self.user.pk)
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
 
@@ -155,7 +168,7 @@ class PlanningCreationViewTest(TestCase):
 
         # The planning has all the wanted attributes
         self.assertEqual(params.get('creator'), planning.creator.pk)
-        for event in event_dict:
+        for event in self.events_data:
             created_event = planning.event_set.get(date=event['date'])
             for key, value in event.items():
                 if value and key != 'date':
@@ -168,31 +181,16 @@ class PlanningCreationViewTest(TestCase):
                                          value)
 
     def test_create_with_event_and_guests(self):
-        event_dict = [
-            {'date': '2020-12-05', 'time': '',
-             'description': '', 'address': ''},
-            {'date': '2020-12-06', 'time': '18:05:00',
-             'description': '', 'address': ''},
-            {'date': '2020-12-07', 'time': '18:30:00',
-             'description': 'A pretty long description with specials '
-                            'char as = and & and # or è, é, %, ?!, *,'
-                            '$,},@,+256...',
-             'address': ''},
-            {'date': '2020-12-08', 'time': '20:00:00',
-             'description': 'This is description',
-             'address': '2 boulevard something'}
-        ]
-        event_list = []
-        for event_args in event_dict:
-            response = self.client.post(reverse('plannings:check_event'),
-                                    event_args)
-            self.assertEqual(response.status_code, 200)
-            event_list.append(response.content)
+        for i, event in enumerate(self.events_data):
+            self.event_setform_data[self.prefix+'-TOTAL_FORMS'] += 1
+            for key, value in event.items():
+                self.event_setform_data[f"{self.prefix}-{i}-{key}"] = value
         guest_emails = ["participant@test.com",
                         "participant2@test.com",
                         "participant3@test.com"]
-        params = {'name': 'Test', 'event': event_list, 'creator': self.user.pk,
-                  'protected': True, 'guest_email': guest_emails}
+        params = dict(self.event_setform_data,
+                      name='Test', creator=self.user.pk,
+                      protected=True, guest_email=guest_emails)
         response = self.client.post(reverse('plannings:create'), params)
         planning = Planning.objects.get(name=params['name'])
 
@@ -205,7 +203,7 @@ class PlanningCreationViewTest(TestCase):
         self.assertTrue(planning.protected)
         self.assertEqual(params['guest_email'],
                          [e.email for e in planning.guest_emails.all()])
-        for event in event_dict:
+        for event in self.events_data:
             created_event = planning.event_set.get(date=event['date'])
             for key, value in event.items():
                 if value and key != 'date':

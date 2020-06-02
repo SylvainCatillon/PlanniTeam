@@ -2,13 +2,15 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.forms import model_to_dict
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse, \
+    HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 
-from plannings.forms import PlanningCreationForm, EventCreationForm
+from plannings.forms import PlanningCreationForm, EventCreationForm, \
+    EventInlineFormSet
 from plannings.models import GuestEmail, Planning
 
 
@@ -27,11 +29,18 @@ def create_planning(request):
     """
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
+        # import pdb; pdb.set_trace()
         if planning_form.is_valid():
             # TODO: with transaction.atomic(),
-            #  pour eviter un planning incomplet?
+            #  pour éviter un planning incomplet?
+            #  Ou planning_form.save(commit=false)?
             #  Mais pas forcement grave, comme on peut le modifier...
             planning = planning_form.save()
+
+            event_formset = EventInlineFormSet(request.POST, instance=planning)
+            if event_formset.is_valid():
+                event_formset.save()
+
             if planning.protected:
                 guest_emails = request.POST.getlist('guest_email')
                 for email in guest_emails:
@@ -39,18 +48,14 @@ def create_planning(request):
                         planning.guest_emails.add(GuestEmail.objects.get(email=email))
                     except GuestEmail.DoesNotExist:
                         planning.guest_emails.create(email=email)
-            events = request.POST.getlist('event')
-            for event in events:
-                event_args = {key: value for key, value in json.loads(event).items() if value}
-                planning.event_set.create(**event_args)
 
             # TODO: remplacer par shortcut redirect()
             return HttpResponseRedirect(reverse(
                 'plannings:created', kwargs={'planning_ekey': planning.ekey}))
     else:
         planning_form = PlanningCreationForm(initial={'creator': request.user.pk})
-    event_form = EventCreationForm()
-    context = {'planning_form': planning_form, 'event_form': event_form}
+    event_formset = EventInlineFormSet()
+    context = {'planning_form': planning_form, 'event_formset': event_formset}
     return render(request, 'plannings/create_planning.html', context)
 
 
@@ -66,12 +71,9 @@ def check_event(request):
     """
     form = EventCreationForm(request.POST)
     if form.is_valid():
-        event = form.save(commit=False)
-        if event:  # TODO: verification inutile, suite à form.is_valid?
-            return JsonResponse(model_to_dict(event))
+        return HttpResponse("Les informations sont valides")
     else:
-        return JsonResponse(form.errors, status=422)
-        # TODO: Change Http error code. 422 ou 400?
+        return HttpResponse(form.errors.as_json(), status=422)
 
 
 def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView en créant link dans create??
