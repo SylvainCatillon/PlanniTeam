@@ -38,18 +38,6 @@ class Planning(EncryptedIDModel):
         return reverse(
             'participations:view', args=(str(self.ekey),))
 
-    #  TODO: Voir si la fonction peut-être rentable en l'optimisant.
-    #   Peut-être en utilisant prefetch_related.
-    #   Trop de requête à la base de données pour l'instant,
-    #   et donne aussi l'utilisateur en cours
-    # def get_participants(self):
-    #     participants = []
-    #     for event in self.event_set.all():
-    #         for participant in event.participants.all():
-    #             participants.append(participant)
-    #     return sorted(list(dict.fromkeys(participants)),
-    #                   key=lambda x: x.first_name)
-
 
 class Event(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
@@ -62,9 +50,3 @@ class Event(models.Model):
 
     class Meta:
         ordering = ['date']
-
-    # TODO: optimisation: eviter un requete à la base de données en effectuant
-    #  ce compte dans la vue, et en determinant l'attribut à ce moment là
-    # @property
-    # def availability_count(self):
-    #     return self.participation_set.filter(answer='YES').count()

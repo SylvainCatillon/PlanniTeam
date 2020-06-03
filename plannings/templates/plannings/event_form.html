@@ -1,23 +1,23 @@
 <button id="id_{{ form.prefix }}-event_dropdown" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
   <span>{{ button_text }}</span>
 </button>
-<div class="event_form dropdown-menu bg-light px-2 overflow-auto mw-100 mh-100" aria-labelledby="id_{{ form.prefix}}-event_dropdown" data-prefix="{{ form.prefix }}">
+<div class="event_form dropdown-menu bg-light px-2 overflow-auto mw-100 mh-100" aria-labelledby="id_{{ form.prefix}}-event_dropdown" data-prefix="{{ form.prefix }}" data-check-url="{% url 'plannings:check_event' %}">
   <a class="close" onclick="$('#id_{{ form.prefix}}-event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
   {% for hidden in form.hidden_fields %}
     {{ hidden }}
   {% endfor %}
   <div class="row">
     <div class="form-group col">
-      {% include 'plannings/form_field.html' with field=form.date %}
+      {% include 'core/form_field.html' with field=form.date %}
     </div>
     <div class="form-group col">
-      {% include 'plannings/form_field.html' with field=form.time %}
+      {% include 'core/form_field.html' with field=form.time %}
     </div>
   </div>
   {% for field in form.visible_fields %}
   {% if forloop.counter0 > 1 %}
     <div class="form-group" {% if hide_delete and 'DELETE' in field.name %}style="display: none"{% endif %}>
-      {% include 'plannings/form_field.html' %}
+      {% include 'core/form_field.html' %}
     </div>
   {% endif %}
   {% endfor %}

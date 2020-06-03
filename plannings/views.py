@@ -1,17 +1,13 @@
-import json
-
 from django.contrib.auth.decorators import login_required
-from django.forms import model_to_dict
-from django.http import HttpResponseRedirect, Http404, JsonResponse, \
-    HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 
 from plannings.forms import PlanningCreationForm, EventCreationForm, \
     EventInlineFormSet
-from plannings.models import GuestEmail, Planning
+from plannings.models import Planning
 from plannings.utils import update_guests, add_guests
 
 
@@ -47,9 +43,7 @@ def create_planning(request):
                 guest_emails = request.POST.getlist('guest_email')
                 add_guests(planning, guest_emails)
 
-            # TODO: remplacer par shortcut redirect()
-            return HttpResponseRedirect(reverse(
-                'plannings:created', kwargs={'planning_ekey': planning.ekey}))
+            return redirect('plannings:created', planning.ekey)
     else:
         planning_form = PlanningCreationForm(initial={'creator': request.user.pk})
     event_formset = EventInlineFormSet()
@@ -59,8 +53,6 @@ def create_planning(request):
     return render(request, 'plannings/create_planning.html', context)
 
 
-# TODO: Is post the good method? Put?
-#  Si changement, require_Post ==> require_http_methods
 @require_POST
 def check_event(request):
     """
@@ -107,9 +99,7 @@ def edit_planning(request, planning_ekey):
                 #  Renvoyer errors?
                 event_formset.save()
 
-            # TODO: remplacer par shortcut redirect(). Changer redirect
-            return HttpResponseRedirect(reverse(
-                'plannings:created', kwargs={'planning_ekey': planning.ekey}))
+            return redirect('participations:view', planning.ekey)
 
     planning_form = PlanningCreationForm(instance=planning)
     event_formset = EventInlineFormSet(instance=planning)

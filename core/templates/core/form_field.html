@@ -9,4 +9,8 @@
 {% if field.help_text %}
 <small class="form-text text-muted">{{ field.help_text }}</small>
 {% endif %}
-<ul id="{{ field.id_for_label }}_errors" class="text-danger field_errors"></ul>
+<div id="{{ field.id_for_label }}_errors" class="text-danger field_errors">
+  {% for error in field.errors %}
+    <p>{{ field.errors }}</p>
+  {% endfor %}
+</div>

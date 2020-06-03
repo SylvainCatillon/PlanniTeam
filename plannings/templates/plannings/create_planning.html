@@ -1,17 +1,27 @@
 {% extends 'core/base.html' %}
 {% block content %}
 {% load widget_tweaks %}
+
 <div class="container">
+<div id="intro" class="mb-2 p-1">
+<button id="intro_collapse_button" class="btn btn-sm float-right" type="button" data-toggle="collapse" data-target="#intro_text" aria-expanded="false" aria-controls="collapseExample">
+  <i class="far fa-eye-slash"></i>
+  </button>
+<div id="intro_text" class="collapse show">
+<h3 class="text-center">Bienvenue sur la création du planning!</h3>
+  <p>Après avoir donné un nom à votre planning, vous pouvez y ajouter des évènements, ou créer votre planning sans évènements.</p>
+<p>Vous pouvez choisir de restreindre l'accès au plannings au personnes dont vous aurez indiqué l'e-mail, ou de laisser le planning accessible à toute personne possédant le lien.
+  Dans tout les cas, le lien du planning vous sera affiché une fois la création terminée.</p>
+<p>Une fois votre planning créé, vous pourrez à tout moment le modifier</p>
+</div>
+</div>
+
 <form id="planning_form" method="post" action="{{ form_url }}">
   {% csrf_token %}
   {{ event_formset.management_form }}
-    <div class="form-group col">
-      {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
-    </div>
-    <div class="form-group form-check col">
-      {% include 'plannings/form_field.html' with field=planning_form.protected %}
-    </div>
-
+  <div class="form-group">
+    {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
+  </div>
 
   <br>
 
@@ -34,6 +44,12 @@
     {% endfor %}
   </div>
 
+  <br>
+
+  <div class="form-group form-check">
+    {% include 'core/form_field.html' with field=planning_form.protected %}
+  </div>
+
   {% for hidden in planning_form.hidden_fields %}
     {{ hidden }}
   {% endfor %}
@@ -47,16 +63,17 @@
   <strong>Succès! </strong> Les informations sont valides.
 </div>
 
-  <br>
-
 <div id="edit_guests_container" class="mb-3 p-2 border border-dark rounded dropdown" style="display: none">
 
   <form id="add_guest_form">
   <div class="input-group">
     <input class="form-control" id="add_guest_input"  type="email" name="add_guest" placeholder="invité@exemple.com" required>
     <div class="input-group-append">
-      <button id="add_guest_submit" class="btn btn-secondary"><label for="add_guest_input" style="display: inline">Ajouter cet email</label></button>
-{#          <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter cet email">#}
+      <button id="add_guest_submit" class="btn btn-secondary">
+        <label for="add_guest_input" style="display: inline">
+          Ajouter cet email
+        </label>
+      </button>
     </div>
   </div>
   </form>
@@ -81,8 +98,6 @@
         {% endfor %}
       </select>
       <button id="delete_guest_submit" class="btn btn-danger">Supprimer ces emails</button>
-{#        <input class="btn btn-danger" type="submit" value="Supprimer">#}
-{#        <input class="btn btn-info" type="reset" value="Désélectionner">#}
       </div>
     </div>
   </div>
@@ -90,8 +105,9 @@
 
 <br>
 
-<input id="planning_submit" class="btn btn-primary btn-lg btn-block"
-       form="planning_form" type="submit" value="Créer le planning">
+<input id="planning_submit" class="btn btn-primary btn-lg btn-block mb-4"
+       form="planning_form" type="submit"
+       value="{% if 'edit' in request.path %}Enregistrer les modifications{% else %}Créer le planning{% endif %}">
 
 </div>
 {% endblock %}
@@ -100,8 +116,18 @@
   <script type="text/javascript">
   $(function () {
 
+      // Change the eye icon on intro toggle
+      $("#intro_text").on("hide.bs.collapse", function () {
+          $("#intro_collapse_button").html('<i class="far fa-eye"></i>')
+      }).on("show.bs.collapse", function () {
+          $("#intro_collapse_button").html('<i class="far fa-eye-slash"></i>')
+      })
+
+      // Set the boundary as viewport for all the dropdowns
       $(".dropdown-toggle").dropdown({boundary: 'viewport'})
 
+
+      // Avoid dropdown close on click inside
       $(".dropdown-menu").on("click", function (event) {
           event.stopPropagation()
 
@@ -130,7 +156,8 @@
           {#console.log(this)#}
       })
 
-      // TODO: vérifier condition ci-dessous
+      // Show the 'edit guests' container if the 'protected' input
+      // is already checked on page load
       if ($('#id_protected').prop("checked")){
           $("#edit_guests_container").show()
       }
@@ -155,7 +182,6 @@
        */
       $("#add_guest_form").on("submit", function (event) {
           event.preventDefault()
-          // FIXME: agir que si champ non vide. Mais corriger bug touche entrée d'abord
           let $input = $('input[name="add_guest"]'),
               email = $input.val(),
               $guests_select = $("#guest_emails_select"),
@@ -163,10 +189,7 @@
 
           if ($guests_select.text().includes(email)) {
               alert("Vous avez déjà indiqué cette adresse")
-          } /*else if (!$input[0].checkValidity()) {
-              alert("Veuillez rentrez une adresse email valide")
-          }*/
-          else {
+          } else {
             $guests_container.append($("<p></p>", {id: email, text: email}))
             $guests_select.append($("<option></option>", {value: email, text: email}))
             $('#planning_form').append($("<input>", {value: email, type: "hidden", name: 'guest_email'}))
@@ -196,7 +219,11 @@
       function validExistingEvent($card) {
           setEventCard($card)
           $card.find('.dropdown-toggle').dropdown('hide')
-          {# TODO: choisir append, prepend ou rien. $card.parent().appendTo($('#created_events_container'))#}
+          let $created_events_container = $('#created_events_container')
+          $card.parent().appendTo($created_events_container)
+          $created_events_container.scrollTop(
+              $created_events_container[0].scrollHeight)
+
           $("#success_alert").fadeTo(2000, 500).slideUp(500, function() {
               $("#success_alert").slideUp(500);
           });
@@ -222,7 +249,7 @@
           // Set the data of the new event form and card
           $.each(data, function () {
               let $input = $card.find('[name$="'+this.name+'"]')
-              if ($input.length && $input.attr('type') !== "hidden") { {# TODO: verifier utilité input.lenght #}
+              if ($input.length && $input.attr('type') !== "hidden") {
                   $input.val(this.value)
               }
 
@@ -283,8 +310,8 @@
               }
           })
 
-          // Post the data to the 'check event' function TODO: use django url
-          $.post(location.origin+'/plannings/check_event/', data).done(function (response) {
+          // Post the data to the 'check event' function
+          $.post($eventForm.data("check-url"), data).done(function (response) {
               if (prefix.includes('__prefix__')) {
                   validNewEvent($eventForm, data)
               } else {

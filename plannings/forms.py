@@ -22,8 +22,10 @@ class PlanningCreationForm(forms.ModelForm):
 class EventCreationForm(forms.ModelForm):
     class Meta:
         model = Event
-        widgets = {'date': forms.DateInput(attrs={'placeholder': 'AAAA-MM-JJ'}),
-                   'time': forms.TimeInput(attrs={'placeholder': 'HH:MM'})}
+        widgets = {
+            'date': forms.DateInput(attrs={'placeholder': 'JJ/MM/AAAA'}),
+            'time': forms.TimeInput(attrs={'placeholder': 'HH:MM'})
+        }
         fields = ['date', 'time', 'description', 'address']
 
 
