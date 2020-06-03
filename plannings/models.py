@@ -19,8 +19,8 @@ class Planning(EncryptedIDModel):
     # TODO: lier à la création/modification d'event.
     #  Via une fonction qui récupère le champ last_modified de Event?
     last_modification_date = models.DateTimeField(auto_now=True)
-    name = models.CharField(max_length=200)
-    protected = models.BooleanField(default=False)
+    name = models.CharField('nom', max_length=200)
+    protected = models.BooleanField('protégé', default=False)
     guest_emails = models.ManyToManyField(GuestEmail)
 
     def __str__(self):
@@ -54,9 +54,9 @@ class Planning(EncryptedIDModel):
 class Event(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
     date = models.DateField()
-    time = models.TimeField(blank=True, null=True)
+    time = models.TimeField('horaire', blank=True, null=True)
     description = models.TextField(blank=True)
-    address = models.CharField(max_length=300, blank=True)
+    address = models.CharField('adresse', max_length=300, blank=True)
     participants = models.ManyToManyField(
         User, through='participations.Participation')
 

@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from plannings.forms import PlanningCreationForm, EventCreationForm, \
     EventInlineFormSet
 from plannings.models import GuestEmail, Planning
+from plannings.utils import update_guests, add_guests
 
 
 @login_required
@@ -29,7 +30,6 @@ def create_planning(request):
     """
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
-        # import pdb; pdb.set_trace()
         if planning_form.is_valid():
             # TODO: with transaction.atomic(),
             #  pour éviter un planning incomplet?
@@ -39,15 +39,13 @@ def create_planning(request):
 
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
+                # TODO: ne pas sauver planning si events invalides?
+                #  Renvoyer errors?
                 event_formset.save()
 
             if planning.protected:
                 guest_emails = request.POST.getlist('guest_email')
-                for email in guest_emails:
-                    try:
-                        planning.guest_emails.add(GuestEmail.objects.get(email=email))
-                    except GuestEmail.DoesNotExist:
-                        planning.guest_emails.create(email=email)
+                add_guests(planning, guest_emails)
 
             # TODO: remplacer par shortcut redirect()
             return HttpResponseRedirect(reverse(
@@ -100,25 +98,13 @@ def edit_planning(request, planning_ekey):
         if planning_form.is_valid():
             planning_form.save()
             if planning.protected:
-                old_emails = planning.get_guest_emails  # TODO: factoriser
                 new_emails = request.POST.getlist('guest_email')
-                for email in new_emails:
-                    if email in old_emails:
-                        old_emails.remove(email)
-                        new_emails.remove(email)
-
-                for del_email in old_emails:
-                    planning.guest_emails.filter(email=del_email).delete()
-
-                for new_email in new_emails:
-                    try:
-                        planning.guest_emails.add(
-                            GuestEmail.objects.get(email=new_email))
-                    except GuestEmail.DoesNotExist:
-                        planning.guest_emails.create(email=new_email)
+                update_guests(planning, new_emails)
 
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
+                # TODO: ne pas sauver planning si events invalides?
+                #  Renvoyer errors?
                 event_formset.save()
 
             # TODO: remplacer par shortcut redirect(). Changer redirect

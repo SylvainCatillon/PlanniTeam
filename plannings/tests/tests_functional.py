@@ -48,9 +48,8 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         field = self.driver.find_element_by_xpath(
             "//form[@id='planning_form']//input[@name='name']")
         field.send_keys('Test')
-        submit = self.driver.find_element_by_xpath(
-            "//form[@id='planning_form']//input[@type='submit']")
-        submit.click()
+        self.driver.find_element_by_id('planning_submit').click()
+
         self.assertIn('created', self.driver.current_url)
         self.assertTrue(self.user.planning_created.count())
         # TODO: verifier le planning avec l'ekey si elle est
@@ -86,9 +85,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         elms[8].send_keys(event_data['address']) # Todo: factoriser
         elms[9].click()
 
-        submit = self.driver.find_element_by_xpath(
-            "//form[@id='planning_form']//input[@type='submit']")
-        submit.click()
+        self.driver.find_element_by_id('planning_submit').click()
 
         # Test if the user is redirected and a planning is created
         self.assertIn('created', self.driver.current_url)
