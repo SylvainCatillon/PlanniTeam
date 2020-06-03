@@ -1,83 +1,152 @@
 {% extends 'core/base.html' %}
 {% block content %}
+{% load widget_tweaks %}
 <div class="container">
-  <form id="planning_form" method="post" action="{% url 'plannings:create' %}">
+<form id="planning_form" method="post" action="{{ form_url }}">
     {% csrf_token %}
-    {{ planning_form.as_p }}
+    {{ event_formset.management_form }}
+<div class="row">
+  <div class="form-group col">
+    {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
+  </div>
+<div class="form-group form-check col">
+    {{ planning_form.protected|add_label_class:"form-check-label"}}
+    {{ planning_form.protected|add_class:"form-chek-input" }}
+  </div>
+</div>
+
+{#    {% for field in planning_form.visible_fields %}#}
+{#    <div class="form-group" >#}
+{#        <ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>#}
+{#        {{ field.label_tag }}#}
+{#        {% render_field field class+="form-control" %}#}
+{#        {% if field.help_text %}#}
+{#        <div class="font-italic">{{ field.help_text }}</div>#}
+{#        {% endif %}#}
+{#    </div>#}
+{#  {% endfor %}#}
+
+
+  {% with form=event_formset.empty_form %}
+    <div id="add_event_container dropdown">
+    {% include 'plannings/event_form.html' with button_text='Ajouter un événement' hide_delete=True %}
+    </div>
+    <div id="model_event_card" style="display: none">
+      {% include 'plannings/event_card.html' with display_form=false %}
+    </div>
+  {% endwith %}
+
+  <div id="created_events_container"
+       class="bg-dark row my-3 p-1 rounded overflow-auto
+       row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5"
+       style="height: 200px"
+  >
+    {% for form in event_formset.forms %}
+    {% include 'plannings/event_card.html' with display_form=True button_text='Modifier' %}
+    {% endfor %}
+  </div>
+
+  {% for hidden in planning_form.hidden_fields %}
+    {{ hidden }}
+  {% endfor %}
+
+  {% for email in planning_form.instance.guest_emails.all %}
+    <input type="hidden" value="{{ email }}" name="guest_email">
+  {% endfor %}
+</form>
+<div class="alert alert_success" id="success-alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
+  <button type="button" class="close" data-dismiss="alert">x</button>
+  <strong>Success! </strong> Les informations sont valides.
+</div>
+
+<div id="edit_guests_container" class="mb-3 p-2 border border-dark rounded dropdown" style="display: none">
+
+  <form id="add_guest_form">
+  <div class="input-group">
+    <input class="form-control" id="add_guest_input"  type="email" name="add_guest" placeholder="invité@exemple.com" required>
+    <div class="input-group-append">
+      <button id="add_guest_submit" class="btn btn-secondary"><label for="add_guest_input" style="display: inline">Ajouter cet email</label></button>
+{#          <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter cet email">#}
+    </div>
+  </div>
   </form>
-  <div id="guests_container" style="display: none">
-    <form id="guest_emails_form">
-      <div class="input-group">
-{#        <label for="guest_email">Ajouter un Email</label>#}
-        <input class="form-control" id="guest_email"  type="email" name="add_guest_email" placeholder="invité@exemple.com" required>
-        <div class="input-group-append">
-          <input id="guest_submit" class="btn btn-secondary" type="submit" value="Ajouter cet email">
-        </div>
-      </div>
-    </form>
-    <div id="GuestsContainer" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px"></div>
-    <div class="dropdown dropup">
-      <button id="DeleteGuestDropdown" class="btn btn-danger mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Supprimer des emails</button>
-      <form id="guests_select_form" class="form-group text-center dropdown-menu" aria-labelledby="DeleteGuestDropdown">
-        <div class="form-group">
-        <label for="guests_email_select">Emails sélectionnés</label>
-        <select id="guests_email_select" class="form-control mb-2" name="emails_to_delete" multiple></select>
-        <input class="btn btn-danger" type="submit" value="Supprimer">
-        <input class="btn btn-info" type="reset" value="Désélectionner">
-        </div>
-      </form>
-    </div>
+
+  <div id="guests_display" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px">
+    {% for email in planning_form.instance.guest_emails.all %}
+    <p id="{{ email }}">{{ email }}</p> {# TODO: changer id #}
+    {% endfor %}
   </div>
-  <div class="dropdown">
-    <button id="event_dropdown" class="btn btn-secondary mt-3 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-      Ajouter un événement
-    </button>
-    <form id="event_form" action="{% url 'plannings:check_event' %}" class="dropdown-menu bg-light px-4 py-3" aria-labelledby="event_dropdown">
-    <a class="close" onclick="$('#event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
-      {% csrf_token %}
-      {% for field in event_form %}
-        <div class="form-group">
-            <ul class="bg-danger field_errors" js-error-field="{{ field.name }}"></ul>
-            {{ field.label_tag }}
-            {{ field }}
-            {% if field.help_text %}
-            <div class="font-italic">{{ field.help_text|safe }}</div>
-            {% endif %}
-        </div>
-      {% endfor %}
-    <input id="event_submit" class="btn btn-primary" type="submit" value="Ajouter">
-    </form>
-  </div>
-  <div id="created_events_container" class="bg-dark row my-3 p-1 rounded overflow-auto" style="height: 200px">
-    <div class="card bg-light mb-1 col-12 col-lg-3 overflow-auto" id="created_event_model" style="height: 185px" hidden>
-      <h5 class="card-header" js-event-field="{{ event_form.date.name }}"></h5>
-      <div class="card-body">
-      {% for field in event_form %}
-        {% if field != event_form.date %} {# TODO: Remplacer par un custom tag permettant un for sauf date #}
-          <div class="card-text" js-event-field="{{ field.name }}"></div>
-        {% endif %}
-      {% endfor %}
-      <button class="btn btn-danger remove_event">Supprimer</button>
+
+
+  <div class="dropup">
+    <button id="delete_guest_dropdown" class="btn btn-danger mt-2 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+      Supprimer des emails</button>
+    <div id="guests_select_form" class="form-group text-center dropdown-menu" aria-labelledby="delete_guest_dropdown">
+      <a class="close" onclick="$('#delete_guest_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+      <div class="form-group">
+      <label for="guest_emails_select">Emails sélectionnés</label>
+      <select id="guest_emails_select" class="form-control mb-2" name="emails_to_delete" multiple>
+        {% for email in planning_form.instance.guest_emails.all %}
+        <option value="{{ email }}">{{ email }}</option>
+        {% endfor %}
+      </select>
+      <button id="delete_guest_submit" class="btn btn-danger">Supprimer ces emails</button>
+{#        <input class="btn btn-danger" type="submit" value="Supprimer">#}
+{#        <input class="btn btn-info" type="reset" value="Désélectionner">#}
       </div>
     </div>
   </div>
-  <input id="planning_submit" class="btn btn-primary btn-lg btn-block" type="submit" form="planning_form" value="Créer le planning">
+</div>
+
+  <input id="planning_submit" class="btn btn-primary btn-lg btn-block"
+         form="planning_form" type="submit" value="Créer le planning">
+
 </div>
 {% endblock %}
 {% block js %}
   {{ block.super }}
   <script type="text/javascript">
   $(function () {
-      const $planning_form = $("#planning_form"),
-          $event_form = $("#event_form"),
-          $guests_container = $("#guests_container")
-      // event_id is an incremental number to get a unique id on the events
-      let event_id = 1;
 
+      $(".dropdown-toggle").dropdown({boundary: 'viewport'})
+
+      $(".dropdown-menu").on("click", function (event) {
+          event.stopPropagation()
+
+      })
+
+      function setEventCard($card) {
+          let $form = $card.find('.event_form')
+          $card.find(".card-header, .card-text").each(function (i, elem) {
+              let $elem = $(elem),
+                  $input = $form.find('[name$="'+$elem.data("field")+'"]')
+              {# TODO: if input is date: format with JS Date() #}
+              $elem.text($input.val())
+
+          })
+          if ($form.find('[name$="DELETE"]').prop("checked")) {
+              $card.css("background-color", "#A0A0A0") {# TODO: définir une variable scss #}
+          } else {
+              $card.css("background-color", "#ffa34d")
+          }
+      }
+
+      // Set the data of the instance events
+      $("#created_events_container .event_card").each(function () {
+          setEventCard($(this))
+          {#console.log($(this))#}
+          {#console.log(this)#}
+      })
+
+      // TODO: vérifier condition ci-dessous
+      if ($('#id_protected').prop("checked")){
+          $("#edit_guests_container").show()
+      }
       /*
       Show the options to choose guests only if input 'protected' is checked
       */
-      $("#id_protected").on("click", function (event) {
+      $("#id_protected").on("click", function () {
+        let $guests_container = $("#edit_guests_container")
         if (this.checked) {
             $guests_container.show()
         } else {
@@ -86,56 +155,183 @@
       });
 
       /*
-      When the guest email input is submitted:
-      -check if the guest's email is already added
-      -add an option with the email as value to the guest's email select elem
+      When the 'add guest button' is clicked:
+      -check if the guest's email is valid and not already added
+      -add the email in the guests display
+      -add an option with the email as value to the guest's email select
       -add a hidden input with the guest's email as value
        */
-      $("#guest_emails_form").on("submit", function (event) {
+      $("#add_guest_form").on("submit", function (event) {
           event.preventDefault()
-          event.stopPropagation()
-          /*
-          Get the data from the form. If the form has more input, a function to
-           retrieve the exact input can be used: data.reduce(function(obj, item)
-           { obj[item.name] = item.value; return obj;}, {} )['add_guest_email']
-          */
-          let $form = $(this),
-              data = $form.serializeArray(),
-              email = data[0].value,
-              $guests_select = $("#guests_email_select"),
-              $guests_container = $('#GuestsContainer')
+          // FIXME: agir que si champ non vide. Mais corriger bug touche entrée d'abord
+          let $input = $('input[name="add_guest"]'),
+              email = $input.val(),
+              $guests_select = $("#guest_emails_select"),
+              $guests_container = $('#guests_display')
+
           if ($guests_select.text().includes(email)) {
               alert("Vous avez déjà indiqué cette adresse")
-          } else {
+          } /*else if (!$input[0].checkValidity()) {
+              alert("Veuillez rentrez une adresse email valide")
+          }*/
+          else {
             $guests_container.append($("<p></p>", {id: email, text: email}))
             $guests_select.append($("<option></option>", {value: email, text: email}))
-            $planning_form.append($("<input>", {value: email, hidden: true, name: 'guest_email'}))
+            $('#planning_form').append($("<input>", {value: email, type: "hidden", name: 'guest_email'}))
             $guests_container.scrollTop(
               $guests_container[0].scrollHeight)
-          } $form.trigger("reset")
+            $input.val("")
+          }
       });
+
 
       /*
       For each selected guest email option:
+      -Remove the select option
       -Remove the associate hidden input
-      -Remove the option
+      -Remove the email from the guests display
        */
-      $("#guests_select_form").on("submit", function (event) {
+      $("#delete_guest_submit").on("click", function (event) {
           event.preventDefault()
-          event.stopPropagation()
-          let data = $(this).serializeArray()
+          let data = $('#guest_emails_select').serializeArray()
           $.each(data, function (i, field) {
             $('option[value="'+field.value+'"]').remove()
-            $('p[id="'+field.value+'"]').remove()
             $('input[name="guest_email"][value="'+field.value+'"]').remove()
+            $('p[id="'+field.value+'"]').remove()
           })
       });
+
+      function validExistingEvent($card) {
+          setEventCard($card)
+          $card.find('.dropdown-toggle').dropdown('hide')
+          {# TODO: choisir append, prepend ou rien. $card.parent().appendTo($('#created_events_container'))#}
+          $("#success_alert").fadeTo(2000, 500).slideUp(500, function() {
+              $("#success_alert").slideUp(500);
+          });
+
+      }
+
+      function validNewEvent($form, data) {
+          let $formContainer = $form.parent(),
+              $new_event = $('#model_event_card').find('.event_card_container').clone(),
+              $card = $new_event.find('.card'),
+              formset_prefix = $form.data('prefix').replace(/__prefix__/g, ""),
+              $total_forms_input = $('input[name="'+formset_prefix+'TOTAL_FORMS"]'),
+              form_number = $total_forms_input.val(),
+              $created_events_container = $("#created_events_container")
+
+          $card.append($formContainer.html().replace(/__prefix__/g, form_number))
+
+          // Set the new event dropdown button
+          let $dropdownButton = $card.find('.dropdown-toggle')
+          $dropdownButton.text('Modifier')
+          $dropdownButton.dropdown({boundary: 'viewport'})
+
+          // Set the data of the new event form and card
+          $.each(data, function () {
+              let $input = $card.find('[name$="'+this.name+'"]')
+              if ($input.length && $input.attr('type') !== "hidden") { {# TODO: verifier utilité input.lenght #}
+                  $input.val(this.value)
+              }
+
+          })
+          setEventCard($card)
+          // Show the delete input and label
+          $card.find('[name$="DELETE"]').parent().show()
+
+          //Set the onClick function of validate event button
+          $card.find('.validate_event').on('click', function (event) {
+              event.preventDefault()
+              validateEvent($(this).parents(".event_form"))
+
+          })
+
+          //Reset the 'add event' form
+          $formContainer.find('input, textarea').each(function () {
+              let $this = $(this),
+                  type = $this.attr('type')
+              if ($this.val() && type !== "hidden") {
+                  if (type === 'checkbox') {
+                      $this.prop('checked', false)
+                  } else {
+                      $this.val("")
+                  }
+              }
+
+          })
+
+          // Increase the value of the TOTAL_FORMS input
+          $total_forms_input.val(parseInt(form_number) + 1)
+
+          $created_events_container.append($new_event)
+          $created_events_container.scrollTop(
+              $created_events_container[0].scrollHeight)
+          $('.dropdown-toggle').dropdown('hide')
+
+      }
+
+      function validateEvent($eventForm) {
+          let data = $('input[name="csrfmiddlewaretoken"]').serializeArray(),
+              prefix = $eventForm.data("prefix")+"-";
+
+          // Remove the previous errors of the form
+          $eventForm.find(".field_errors li").each(function (i, error) {
+              error.remove()
+          });
+
+          // Gather the form's data, and remove the formset prefix, because
+          // the 'check event' function use the original form, not the formset
+          $eventForm.find('input, textarea').each(function () {
+              if ($(this).val()) {
+                  let value = $(this).serializeArray()[0]
+                  if (value) {
+                    value.name = value.name.replace(prefix,"")
+                    data.push(value)
+                  }
+              }
+          })
+
+          // Post the data to the 'check event' function TODO: use django url
+          $.post(location.origin+'/plannings/check_event/', data).done(function (response) {
+              if (prefix.includes('__prefix__')) {
+                  validNewEvent($eventForm, data)
+              } else {
+                  validExistingEvent($eventForm.parents('.card'))
+              }
+
+          }).fail(function (jqXHR) {
+              if (jqXHR.status === 422) {
+                  let data = JSON.parse(jqXHR.responseText)
+                  $.each(data, function (field) {
+                      let $errorsContainer = $("#id_" + prefix + field + "_errors"),
+                          $input = $("#id_" + prefix + field)
+                      $input.val(function () {
+                          return this.defaultValue
+
+                      })
+                      $.each(data[field], function (i, error) {
+                          $errorsContainer.append($('<li>' + error.message + '</li>'))
+
+                      })
+                  })
+          } else {
+              alert("Une erreur s'est produite, veuillez réessayer. Erreur HTTP "+jqXHR.status)
+          }
+
+          });
+      }
+
+      $('.validate_event').on('click', function (event) {
+          event.preventDefault()
+          validateEvent($(this).parents(".event_form"))
+
+      })
 
       /*
       Function called when the event form POST succeed
       Create and display a hidden input and a div with the event data
       */
-      function validEventForm(eventData) {
+      /*function validEventForm(eventData) {
           // Append a hidden input to the planning form
           let $input = $("<input>", {value: JSON.stringify(eventData),
               type: "hidden", name: "event", id: "event_"+event_id})
@@ -167,14 +363,14 @@
           // Reset the event from and hide it
           $event_form.trigger("reset")
           $('#event_dropdown').dropdown('hide')
-      }
+      }*/
 
       /*
       Function called when the event form POST fails
       If the status code is 422 (expected if the form isn't valid),
       add the errors to the associated input
       */
-      function invalidEventForm(jqXHR) {
+      /*function invalidEventForm(jqXHR) {
           if (jqXHR.status === 422) {
               let errors = JSON.parse(jqXHR.responseText)
               $.each(errors, function (field) {
@@ -188,7 +384,7 @@
           } else {
               alert("Une erreur s'est produite, veuillez réessayer. Erreur HTTP "+jqXHR.status)
           }
-      }
+      }*/
 
       /*
       Function called when the event's form is submitted
@@ -198,7 +394,7 @@
       -Call validEventForm() on success, invalidEventForm() on fail
       -Reset the form when the request is over
        */
-      $event_form.on("submit", function (event) {
+      /*$event_form.on("submit", function (event) {
           event.preventDefault()
           event.stopPropagation()
 
@@ -213,7 +409,7 @@
 
           $.post(url, data).done(validEventForm).fail(invalidEventForm);
 
-      });
+      });*/
 
   })
   </script>
