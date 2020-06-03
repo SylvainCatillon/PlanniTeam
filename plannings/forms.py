@@ -10,8 +10,13 @@ class PlanningCreationForm(forms.ModelForm):
 
     class Meta:
         model = Planning
-        widgets = {'creator': forms.HiddenInput(), }
         fields = ['name', 'protected', 'creator']
+        widgets = {'creator': forms.HiddenInput(), }
+        labels = {'protected': "Restreindre l'accès au planning"}
+        help_texts = {
+            'protected': "Vous pouvez restreindre l'accès aux "
+                         "emails sélectionnés, ou le laisser libre"
+        }
 
 
 class EventCreationForm(forms.ModelForm):
