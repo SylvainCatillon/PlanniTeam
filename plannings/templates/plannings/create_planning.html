@@ -3,29 +3,17 @@
 {% load widget_tweaks %}
 <div class="container">
 <form id="planning_form" method="post" action="{{ form_url }}">
-    {% csrf_token %}
-    {{ event_formset.management_form }}
-<div class="row">
-  <div class="form-group col">
-    {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
-  </div>
-<div class="form-group form-check col">
-    {{ planning_form.protected|add_label_class:"form-check-label"}}
-    {{ planning_form.protected|add_class:"form-chek-input" }}
-  </div>
-</div>
+  {% csrf_token %}
+  {{ event_formset.management_form }}
+    <div class="form-group col">
+      {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
+    </div>
+    <div class="form-group form-check col">
+      {% include 'plannings/form_field.html' with field=planning_form.protected %}
+    </div>
 
-{#    {% for field in planning_form.visible_fields %}#}
-{#    <div class="form-group" >#}
-{#        <ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>#}
-{#        {{ field.label_tag }}#}
-{#        {% render_field field class+="form-control" %}#}
-{#        {% if field.help_text %}#}
-{#        <div class="font-italic">{{ field.help_text }}</div>#}
-{#        {% endif %}#}
-{#    </div>#}
-{#  {% endfor %}#}
 
+  <br>
 
   {% with form=event_formset.empty_form %}
     <div id="add_event_container dropdown">
@@ -54,10 +42,12 @@
     <input type="hidden" value="{{ email }}" name="guest_email">
   {% endfor %}
 </form>
-<div class="alert alert_success" id="success-alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
+<div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
   <button type="button" class="close" data-dismiss="alert">x</button>
-  <strong>Success! </strong> Les informations sont valides.
+  <strong>Succès! </strong> Les informations sont valides.
 </div>
+
+  <br>
 
 <div id="edit_guests_container" class="mb-3 p-2 border border-dark rounded dropdown" style="display: none">
 
@@ -98,8 +88,10 @@
   </div>
 </div>
 
-  <input id="planning_submit" class="btn btn-primary btn-lg btn-block"
-         form="planning_form" type="submit" value="Créer le planning">
+<br>
+
+<input id="planning_submit" class="btn btn-primary btn-lg btn-block"
+       form="planning_form" type="submit" value="Créer le planning">
 
 </div>
 {% endblock %}

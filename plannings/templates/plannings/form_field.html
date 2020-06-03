@@ -1,5 +1,4 @@
 {% load widget_tweaks %}
-<ul id="{{ field.id_for_label }}_errors" class="bg-danger field_errors"></ul>
 {% if field|widget_type == 'checkboxinput' %}
   {{ field|add_label_class:"form-check-label"}}
   {{ field|add_class:"form-chek-input" }}
@@ -8,5 +7,6 @@
   {{ field|add_class:"form-control" }}
 {% endif %}
 {% if field.help_text %}
-<div class="font-italic">{{ field.help_text }}</div>
+<small class="form-text text-muted">{{ field.help_text }}</small>
 {% endif %}
+<ul id="{{ field.id_for_label }}_errors" class="text-danger field_errors"></ul>
