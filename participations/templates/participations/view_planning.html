@@ -41,15 +41,15 @@
         </button>
         <div class="dropdown-menu" aria-labelledby="summary_{{ event.id }}">
           <ul class="list-group list-group-flush">
-            <li class="list-group-item list-group-item-success">
+            <li class="list-group-item list-group-item-YES">
               <h5 >Oui</h5>
               {{ event.participations_summary.YES|join:", " }}
             </li>
-            <li class="list-group-item list-group-item-warning">
+            <li class="list-group-item list-group-item-MAYBE">
               <h5 >Peut-être</h5>
               {{ event.participations_summary.MAYBE|join:", " }}
             </li>
-            <li class="list-group-item list-group-item-danger">
+            <li class="list-group-item list-group-item-NO">
               <h5 >Non</h5>
               {{ event.participations_summary.NO|join:", " }}
             </li>
@@ -60,12 +60,18 @@
     <td class="align-middle"> {# user column #}
       <div class="dropright my-1">
         {%  with participation=event.user_participation %}
-        <button id="DropAnswerEvent{{ event.pk }}" class="dropdown-toggle btn text-white" data-toggle="dropdown" aria-expanded="false" style="background-color: #A0A0A0">
+        <button id="DropAnswerEvent{{ event.pk }}"
+                class="dropdown-toggle btn btn-{{ participation.answer|default:"NONE" }}"
+                data-toggle="dropdown"
+                data-previous-answer="{{ participation.answer|default:"NONE" }}"
+                aria-expanded="false">
         </button>
-        <form class="dropdown-menu answer_form" aria-labelledby="DropAnswerEvent{{ event.pk }}" data-initial-text="{{ participation.get_answer_display }}" data-initial-answer="{{ participation.answer|default:'NONE' }}" >
+        <form class="dropdown-menu answer_form" aria-labelledby="DropAnswerEvent{{ event.pk }}" data-initial-text="{{ participation.get_answer_display }}">
           {% for answer, display in answer_choices %}
           <label  class="dropdown-item" for="Answer{{ answer }}Event{{ event.pk }}">
-            <input type="radio" name="answer" value="{{ answer }}" data-text="{{ display }}" id="Answer{{ answer }}Event{{ event.pk }}" {% if answer == participation.answer %} checked="checked" {% endif %}>
+            <input type="radio" name="answer" value="{{ answer }}"
+                   data-text="{{ display }}" id="Answer{{ answer }}Event{{ event.pk }}"
+                {% if answer == participation.answer %} checked="checked" {% endif %}>
             <span>{{ display }}</span>
           </label>
           {% endfor %}
@@ -75,7 +81,7 @@
       {%  endwith %}
     </td>
       {% for participation in event.other_participations %} {# participants column #}
-        <td class="d-none d-md-table-cell align-middle table-{{ participation.get_color }}">
+        <td class="d-none d-md-table-cell align-middle table-{{ participation.answer }}">
           <span>{{ participation.get_answer_display }}</span>
         </td>
       {% endfor %}
@@ -92,19 +98,18 @@
   <script type="text/javascript">
   $(function () {
 
-      const colors = {YES: "#28a745", NO: "#dc3545", MAYBE: "#ffc107", NONE: "#A0A0A0"} {# TODO: Changer par définition CSS/SCSS ou table Answer avec filed Color #}
-
-
       /*
       Set the text and the color of the answer's dropdown button, with the
       values of the checked answer.
       */
       function setAnswerDropButton() {
           let $this = $(this),
-              $dropButton = $this.parents(".dropdown-menu").siblings('.dropdown-toggle')
-          $dropButton.text($this.data("text"))
-          $dropButton.css('background-color', colors[$this.val()])
-          $dropButton.dropdown('hide')
+              $button = $this.parents(".dropdown-menu").siblings('.dropdown-toggle')
+          $button.text($this.data("text"))
+          $button.removeClass("btn-"+$button.data("previous-answer"))
+          $button.addClass("btn-"+$this.val())
+          $button.data("previous-answer", $this.val())
+          $button.dropdown('hide')
       }
 
       /*
@@ -124,10 +129,19 @@
       $('#reset_answers').on('click', function () {
           $('.answer_form').each(function (i,e) {
               let $form = $(e),
-                  $dropButton = $form.siblings('.dropdown-toggle')
+                  $button = $form.siblings('.dropdown-toggle'),
+                  $initialInput = $form.find("input[checked]"),
+                  initial_text = "",
+                  initial_value = "NONE"
+              if ($initialInput.length) {
+                  initial_text = $initialInput.data("text")
+                  initial_value = $initialInput.val()
+              }
               $form.trigger("reset")
-              $dropButton.text($form.data("initial-text"))
-              $dropButton.css('background-color', colors[$form.data('initial-answer')])
+              $button.removeClass("btn-"+$button.data("previous-answer"))
+              $button.text(initial_text)
+              $button.addClass("btn-"+initial_value)
+              $button.data("previous-answer", initial_value)
 
           })
 

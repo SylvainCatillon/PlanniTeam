@@ -22,19 +22,9 @@ class Participation(models.Model):
             # TODO: CheckConstraint vérifiant que l'email de l'user est dans
             #  la guest_mail du planning de l'event
         ]
-        ordering = ['participant__first_name']  # TODO: verifier l'utilité
+        ordering = ['participant__first_name']
 
     def __str__(self):
         participant = self.participant.first_name
         event = self.event.pk
         return f"Participant: {participant}, Event: {event}"
-
-    def get_color(self):
-        # TODO: déplacer colors vers un fichier de config ou des propriétés CSS
-        colors = {
-            'YES': 'success',
-            'MAYBE': 'warning',
-            'NO': 'danger',
-            None: 'info'
-        }
-        return colors.get(self.answer)

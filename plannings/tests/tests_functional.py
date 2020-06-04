@@ -16,7 +16,6 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # FIXME bug sur la fixture
         cls.driver = WebDriver()
         cls.driver.implicitly_wait(15)
 
