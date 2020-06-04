@@ -16,8 +16,6 @@ class Planning(EncryptedIDModel):
     creator = models.ForeignKey(User, on_delete=models.CASCADE,
                                 related_name='planning_created')
     creation_date = models.DateTimeField(auto_now_add=True)
-    # TODO: lier à la création/modification d'event.
-    #  Via une fonction qui récupère le champ last_modified de Event?
     last_modification_date = models.DateTimeField(auto_now=True)
     name = models.CharField('nom', max_length=200)
     protected = models.BooleanField('protégé', default=False)

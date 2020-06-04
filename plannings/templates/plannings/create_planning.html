@@ -58,7 +58,7 @@
     <input type="hidden" value="{{ email }}" name="guest_email">
   {% endfor %}
 </form>
-<div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use bootstrap modal. on success, modal show set time out modal hide #}
+<div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use modal instead? #}
   <button type="button" class="close" data-dismiss="alert">x</button>
   <strong>Succès! </strong> Les informations sont valides.
 </div>
@@ -80,7 +80,7 @@
 
   <div id="guests_display" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px">
     {% for email in planning_form.instance.guest_emails.all %}
-    <p id="{{ email }}">{{ email }}</p> {# TODO: changer id #}
+    <p id="id_{{ email }}">{{ email }}</p>
     {% endfor %}
   </div>
 
@@ -138,14 +138,13 @@
           $card.find(".card-header, .card-text").each(function (i, elem) {
               let $elem = $(elem),
                   $input = $form.find('[name$="'+$elem.data("field")+'"]')
-              {# TODO: if input is date: format with JS Date() #}
               $elem.text($input.val())
 
           })
           if ($form.find('[name$="DELETE"]').prop("checked")) {
-              $card.css("background-color", "#A0A0A0") {# TODO: définir une variable scss #}
+              $card.addClass("event_card--deleted")
           } else {
-              $card.css("background-color", "#ffa34d")
+              $card.removeClass("event_card--deleted")
           }
       }
 
@@ -190,7 +189,7 @@
           if ($guests_select.text().includes(email)) {
               alert("Vous avez déjà indiqué cette adresse")
           } else {
-            $guests_container.append($("<p></p>", {id: email, text: email}))
+            $guests_container.append($("<p></p>", {id: "id_"+email, text: email}))
             $guests_select.append($("<option></option>", {value: email, text: email}))
             $('#planning_form').append($("<input>", {value: email, type: "hidden", name: 'guest_email'}))
             $guests_container.scrollTop(
@@ -212,7 +211,7 @@
           $.each(data, function (i, field) {
             $('option[value="'+field.value+'"]').remove()
             $('input[name="guest_email"][value="'+field.value+'"]').remove()
-            $('p[id="'+field.value+'"]').remove()
+            $('p[id="id_'+field.value+'"]').remove()
           })
       });
 
@@ -345,91 +344,6 @@
           validateEvent($(this).parents(".event_form"))
 
       })
-
-      /*
-      Function called when the event form POST succeed
-      Create and display a hidden input and a div with the event data
-      */
-      /*function validEventForm(eventData) {
-          // Append a hidden input to the planning form
-          let $input = $("<input>", {value: JSON.stringify(eventData),
-              type: "hidden", name: "event", id: "event_"+event_id})
-          $planning_form.append($input)
-
-          // Prepare a div to display the event
-          let $div = $("#created_event_model").clone()
-          $div.find("[js-event-field]").each(function (i, elem) {
-              let $elem = $(elem)
-              $elem.text(eventData[$elem.attr("js-event-field")])
-          });
-          // Define a unique, incremental id for the div and the input
-          $div.attr("hidden", null).attr("id", "event_"+event_id)
-          event_id++
-
-          // Set an on click function to the remove button
-          $div.find(".remove_event").on("click", function () {
-              let parent = $(this).parents(".card")
-              $('div[id="'+parent.attr("id")+'"').remove()
-              $('input[id="'+parent.attr("id")+'"').remove()
-          })
-
-          // Append the div to the events container
-          let $created_events_container = $("#created_events_container")
-          $created_events_container.append($div)
-          $created_events_container.scrollTop(
-              $created_events_container[0].scrollHeight)
-
-          // Reset the event from and hide it
-          $event_form.trigger("reset")
-          $('#event_dropdown').dropdown('hide')
-      }*/
-
-      /*
-      Function called when the event form POST fails
-      If the status code is 422 (expected if the form isn't valid),
-      add the errors to the associated input
-      */
-      /*function invalidEventForm(jqXHR) {
-          if (jqXHR.status === 422) {
-              let errors = JSON.parse(jqXHR.responseText)
-              $.each(errors, function (field) {
-                  // Reset the invalid fields and display the errors
-                  $('input[name="'+field+'"').val("")
-                  let $div = $('ul[js-error-field="'+field+'"]')
-                  errors[field].forEach(function (error) {
-                      $div.append($('<li>'+error+'</li>'))
-                  })
-              })
-          } else {
-              alert("Une erreur s'est produite, veuillez réessayer. Erreur HTTP "+jqXHR.status)
-          }
-      }*/
-
-      /*
-      Function called when the event's form is submitted
-      -Remove the errors of the previous form
-      -Get the data and url of the form
-      -Post the form to the url
-      -Call validEventForm() on success, invalidEventForm() on fail
-      -Reset the form when the request is over
-       */
-      /*$event_form.on("submit", function (event) {
-          event.preventDefault()
-          event.stopPropagation()
-
-          // Remove previous form errors
-          $("ul[js-error-field] li").each(function (i, error) {
-              error.remove()
-          });
-
-          let $form = $(this),
-              url = $form.attr("action"),
-              data = $form.serialize();
-
-          $.post(url, data).done(validEventForm).fail(invalidEventForm);
-
-      });*/
-
   })
   </script>
 {%  endblock %}
