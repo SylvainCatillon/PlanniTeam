@@ -1,9 +1,12 @@
+{% load static %}
 <nav class="navbar navbar-expand-lg navbar-light bg-primary static-top mb-3">
 <div class="container">
 <a class="navbar-brand" href="{% url 'index' %}">
-  <img src="http://placehold.it/150x50?text=Logo" alt="">
+  <img src="{% static 'core/img/logo_planniteam.jpeg' %}" alt="logo" class="img-fluid" style="height: 75px">
 </a>
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_responsive" aria-controls="navbar_responsive" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler" type="button" data-toggle="collapse"
+          data-target="#navbar_responsive" aria-controls="navbar_responsive"
+          aria-expanded="false" aria-label="Toggle navigation">
   <span class="navbar-toggler-icon"></span>
 </button>
 <div class="collapse navbar-collapse" id="navbar_responsive">

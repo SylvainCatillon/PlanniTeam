@@ -2,7 +2,8 @@
 {%  block content %}
   <div class="container">
     <p>Planning créé</p>
-    <a id="PlanningLink" href="{{ link }}">{{ link }}</a></br>
+    <a id="PlanningLink" href="{{ link }}">{{ link }}</a>
+    <br>
     <button id="CopyButton" class="btn btn-info">Copier le lien</button>
   </div>
 {% endblock %}
@@ -13,6 +14,11 @@
 
       /*
       Copy the planning's link in the clipboard when the copy button is clicked
+      -create a hidden temp input
+      -set the link as the input value
+      -force the focus on the input
+      -use the command 'copy'
+      -delete the temp input
        */
       $("#CopyButton").on("click", function () {
           let $temp = $("<input/>")
@@ -26,7 +32,6 @@
               alert("Erreur, le lien n'a pas pu être copié")
           }
       })
-
 
   })
   </script>

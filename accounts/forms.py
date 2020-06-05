@@ -4,6 +4,7 @@ from accounts.models import User
 
 
 class CustomUserCreationForm(UserCreationForm):
+    """Form for the user creation"""
 
     class Meta:
         model = User

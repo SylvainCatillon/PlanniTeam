@@ -4,22 +4,29 @@
 
 <div class="container">
 <div id="intro" class="mb-2 p-1">
-<button id="intro_collapse_button" class="btn btn-sm float-right" type="button" data-toggle="collapse" data-target="#intro_text" aria-expanded="false" aria-controls="collapseExample">
+<button id="intro_collapse_button" class="btn btn-sm float-right" type="button"
+        data-toggle="collapse" data-target="#intro_text" aria-expanded="false"
+        aria-controls="collapseExample" aria-label="Switch intro">
   <i class="far fa-eye-slash"></i>
   </button>
-<div id="intro_text" class="collapse show">
-<h3 class="text-center">Bienvenue sur la création du planning!</h3>
-  <p>Après avoir donné un nom à votre planning, vous pouvez y ajouter des évènements, ou créer votre planning sans évènements.</p>
-<p>Vous pouvez choisir de restreindre l'accès au plannings au personnes dont vous aurez indiqué l'e-mail, ou de laisser le planning accessible à toute personne possédant le lien.
-  Dans tout les cas, le lien du planning vous sera affiché une fois la création terminée.</p>
-<p>Une fois votre planning créé, vous pourrez à tout moment le modifier</p>
-</div>
+  <div id="intro_text" class="collapse show">
+    <h3 class="text-center">Bienvenue sur la création du planning!</h3>
+    <p>Après avoir donné un nom à votre planning, vous pouvez y ajouter des
+      évènements, ou créer votre planning sans évènements.</p>
+    <p>Vous pouvez choisir de restreindre l'accès au planning aux personnes
+      dont vous aurez indiqué l'e-mail, ou de laisser le planning accessible à
+      toute personne possédant le lien.
+      Dans tout les cas, le lien du planning vous sera affiché une fois la
+      création terminée.</p>
+    <p>Une fois votre planning créé, vous pourrez à tout moment le modifier</p>
+  </div>
 </div>
 
 <form id="planning_form" method="post" action="{{ form_url }}">
   {% csrf_token %}
   {{ event_formset.management_form }}
   <div class="form-group">
+    <label class="sr-only">{{ planning_form.name.label_tag }}</label>
     {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
   </div>
 
@@ -63,45 +70,59 @@
   <strong>Succès! </strong> Les informations sont valides.
 </div>
 
-<div id="edit_guests_container" class="mb-3 p-2 border border-dark rounded dropdown" style="display: none">
+  <div id="edit_guests_container"
+       class="mb-3 p-2 border border-dark rounded dropdown"
+       style="display: none">
 
-  <form id="add_guest_form">
-  <div class="input-group">
-    <input class="form-control" id="add_guest_input"  type="email" name="add_guest" placeholder="invité@exemple.com" required>
-    <div class="input-group-append">
-      <button id="add_guest_submit" class="btn btn-secondary">
-        <label for="add_guest_input" style="display: inline">
-          Ajouter cet email
-        </label>
-      </button>
+    <form id="add_guest_form">
+      <div class="input-group">
+        <input class="form-control" id="add_guest_input" type="email"
+               name="add_guest" placeholder="invité@exemple.com" required>
+        <div class="input-group-append">
+          <button id="add_guest_submit" class="btn btn-secondary">
+            <label for="add_guest_input" style="display: inline">
+              Ajouter cet email
+            </label>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div id="guests_display"
+         class="bg-light my-3 rounded overflow-auto text-center"
+         style="height: 100px">
+      {% for email in planning_form.instance.guest_emails.all %}
+        <p id="id_{{ email }}">{{ email }}</p>
+      {% endfor %}
     </div>
-  </div>
-  </form>
-
-  <div id="guests_display" class="bg-light my-3 rounded overflow-auto text-center" style="height: 100px">
-    {% for email in planning_form.instance.guest_emails.all %}
-    <p id="id_{{ email }}">{{ email }}</p>
-    {% endfor %}
-  </div>
 
 
-  <div class="dropup">
-    <button id="delete_guest_dropdown" class="btn btn-danger mt-2 dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-      Supprimer des emails</button>
-    <div id="guests_select_form" class="form-group text-center dropdown-menu" aria-labelledby="delete_guest_dropdown">
-      <a class="close" onclick="$('#delete_guest_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
-      <div class="form-group">
-      <label for="guest_emails_select">Emails sélectionnés</label>
-      <select id="guest_emails_select" class="form-control mb-2" name="emails_to_delete" multiple>
-        {% for email in planning_form.instance.guest_emails.all %}
-        <option value="{{ email }}">{{ email }}</option>
-        {% endfor %}
-      </select>
-      <button id="delete_guest_submit" class="btn btn-danger">Supprimer ces emails</button>
+    <div class="dropup">
+      <button id="delete_guest_dropdown"
+              class="btn btn-danger mt-2 dropdown-toggle"
+              data-toggle="dropdown" aria-expanded="false">
+        Supprimer des emails
+      </button>
+      <div id="guests_select_form" class="form-group text-center dropdown-menu"
+           aria-labelledby="delete_guest_dropdown">
+        <a class="close"
+           onclick="$('#delete_guest_dropdown').dropdown('hide')">
+          <span aria-hidden="true">&times;</span></a>
+        <div class="form-group">
+          <label for="guest_emails_select">Emails sélectionnés</label>
+          <select id="guest_emails_select" class="form-control mb-2"
+                  name="emails_to_delete" multiple>
+            {% for email in planning_form.instance.guest_emails.all %}
+              <option value="{{ email }}">{{ email }}</option>
+            {% endfor %}
+          </select>
+          <button id="delete_guest_submit" class="btn btn-danger">
+            <span>Supprimer ces emails</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 <br>
 
@@ -148,11 +169,9 @@
           }
       }
 
-      // Set the data of the instance events
+      // Set the data of the existing events
       $("#created_events_container .event_card").each(function () {
           setEventCard($(this))
-          {#console.log($(this))#}
-          {#console.log(this)#}
       })
 
       // Show the 'edit guests' container if the 'protected' input
@@ -160,10 +179,9 @@
       if ($('#id_protected').prop("checked")){
           $("#edit_guests_container").show()
       }
-      /*
-      Show the options to choose guests only if input 'protected' is checked
-      */
-      $("#id_protected").on("click", function () {
+
+      // Show the options to choose guests only if input 'protected' is checked
+      $("#id_protected").on("change", function () {
         let $guests_container = $("#edit_guests_container")
         if (this.checked) {
             $guests_container.show()
@@ -173,11 +191,12 @@
       });
 
       /*
-      When the 'add guest button' is clicked:
-      -check if the guest's email is valid and not already added
+      When the 'add guest form' is submitted:
+      -check that the guest's email isn't already added
       -add the email in the guests display
       -add an option with the email as value to the guest's email select
       -add a hidden input with the guest's email as value
+      -reset the input
        */
       $("#add_guest_form").on("submit", function (event) {
           event.preventDefault()
@@ -215,6 +234,10 @@
           })
       });
 
+      /*
+      Function launched after a successful server validation
+      on an existing event modification
+       */
       function validExistingEvent($card) {
           setEventCard($card)
           $card.find('.dropdown-toggle').dropdown('hide')
@@ -229,6 +252,10 @@
 
       }
 
+      /*
+      Function launched after a successful server validation
+      on an new event
+       */
       function validNewEvent($form, data) {
           let $formContainer = $form.parent(),
               $new_event = $('#model_event_card').find('.event_card_container').clone(),
@@ -310,7 +337,7 @@
           })
 
           // Post the data to the 'check event' function
-          $.post($eventForm.data("check-url"), data).done(function (response) {
+          $.post($eventForm.data("check-url"), data).done(function () {
               if (prefix.includes('__prefix__')) {
                   validNewEvent($eventForm, data)
               } else {

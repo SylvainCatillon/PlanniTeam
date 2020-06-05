@@ -61,14 +61,16 @@ class TestFunctionalPlanningParticipation(StaticLiveServerTestCase):
         self.assertNotEqual(answer1, old_answer)
 
         # Submit new answers for the two events
-        self.driver.find_element_by_id('DropAnswerEvent1').click()
+        self.driver.find_element_by_id('drop_answer_event-1').click()
         radio = WebDriverWait(self.driver, 15).until(
-            EC.presence_of_element_located((By.ID, "Answer"+answer1+"Event1"))
+            EC.presence_of_element_located(
+                (By.ID, "answer-" + answer1 + "_event-1"))
         )
         radio.click()
-        self.driver.find_element_by_id('DropAnswerEvent2').click()
+        self.driver.find_element_by_id('drop_answer_event-2').click()
         radio = WebDriverWait(self.driver, 15).until(
-            EC.presence_of_element_located((By.ID, "Answer"+answer2+"Event2"))
+            EC.presence_of_element_located(
+                (By.ID, "answer-" + answer2 + "_event-2"))
         )
         radio.click()
         self.driver.find_element_by_id('submit_answers').click()

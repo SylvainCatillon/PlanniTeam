@@ -4,7 +4,9 @@
 <h3 class="text-center">{{ planning.name }}</h3>
 <br>
 {% if user == planning.creator %}
-  <a class="btn btn-block btn-dark" href="{% url 'plannings:edit' planning_ekey=planning.ekey %}">Modifier le planning</a>
+  <a class="btn btn-block btn-dark"
+     href="{% url 'plannings:edit' planning_ekey=planning.ekey %}">
+    Modifier le planning</a>
   <br>
 {% endif %}
 {% csrf_token %}
@@ -24,8 +26,9 @@
   <tr>
     <td class="bg-dark"> {# events column #}
       <div class="dropright my-1">
-        <a id="event_{{ event.id }}" class="dropdown-toggle btn text-white" data-toggle="dropdown" aria-expanded="false">
-        {{ event.date|date:"d M" }}
+        <a id="event_{{ event.id }}" class="dropdown-toggle btn text-white"
+           data-toggle="dropdown" aria-expanded="false">
+          {{ event.date|date:"d M" }}
         </a>
         <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
           <p>{% if event.time %}{{ event.time }}{% endif %}</p>
@@ -36,7 +39,8 @@
     </td>
     <td> {# availabilities column #}
       <div class="dropright">
-        <button id="summary_{{ event.id }}" class="dropdown-toggle btn" data-toggle="dropdown" aria-expanded="false">
+        <button id="summary_{{ event.id }}" class="dropdown-toggle btn"
+                data-toggle="dropdown" aria-expanded="false">
           <span>{{ event.participations_summary.YES|length }} oui</span>
         </button>
         <div class="dropdown-menu" aria-labelledby="summary_{{ event.id }}">
@@ -59,38 +63,46 @@
     </td>
     <td class="align-middle"> {# user column #}
       <div class="dropright my-1">
-        {%  with participation=event.user_participation %}
-        <button id="DropAnswerEvent{{ event.pk }}"
-                class="dropdown-toggle btn btn-{{ participation.answer|default:"NONE" }}"
-                data-toggle="dropdown"
-                data-previous-answer="{{ participation.answer|default:"NONE" }}"
-                aria-expanded="false">
-        </button>
-        <form class="dropdown-menu answer_form" aria-labelledby="DropAnswerEvent{{ event.pk }}" data-initial-text="{{ participation.get_answer_display }}">
-          {% for answer, display in answer_choices %}
-          <label  class="dropdown-item" for="Answer{{ answer }}Event{{ event.pk }}">
-            <input type="radio" name="answer" value="{{ answer }}"
-                   data-text="{{ display }}" id="Answer{{ answer }}Event{{ event.pk }}"
-                {% if answer == participation.answer %} checked="checked" {% endif %}>
-            <span>{{ display }}</span>
-          </label>
-          {% endfor %}
-          <input type="hidden" name="event" value="{{ event.pk }}">
-        </form>
-      </div>
-      {%  endwith %}
+        {% with participation=event.user_participation %}
+          <button id="drop_answer_event-{{ event.pk }}"
+                  class="dropdown-toggle btn btn-{{ participation.answer|default:"NONE" }}"
+                  data-toggle="dropdown"
+                  data-previous-answer="{{ participation.answer|default:"NONE" }}"
+                  aria-expanded="false">
+          </button>
+          <form class="dropdown-menu answer_form"
+                aria-labelledby="drop_answer_event-{{ event.pk }}"
+                data-initial-text="{{ participation.get_answer_display }}">
+            {% for answer, display in answer_choices %}
+              <label class="dropdown-item"
+                     for="Answer{{ answer }}Event{{ event.pk }}">
+                <input type="radio" name="answer" value="{{ answer }}"
+                       data-text="{{ display }}"
+                       id="answer-{{ answer }}_event-{{ event.pk }}"
+                    {% if answer == participation.answer %}
+                       checked="checked" {% endif %}>
+                <span>{{ display }}</span>
+              </label>
+            {% endfor %}
+            <input type="hidden" name="event" value="{{ event.pk }}">
+          </form>
+          </div>
+        {% endwith %}
     </td>
-      {% for participation in event.other_participations %} {# participants column #}
-        <td class="d-none d-md-table-cell align-middle table-{{ participation.answer }}">
-          <span>{{ participation.get_answer_display }}</span>
-        </td>
-      {% endfor %}
+    {% for participation in event.other_participations %}
+      {# participants column #}
+      <td class="d-none d-md-table-cell align-middle table-{{ participation.answer }}">
+        <span>{{ participation.get_answer_display }}</span>
+      </td>
+    {% endfor %}
   </tr>
 {% endfor %}
 </tbody>
 </table>
-<button id="submit_answers" class="btn btn-info" data-post-url="{% url 'participations:participate' %}">Envoyer</button>
-<button id="reset_answers" class="btn btn-info">Reset</button>
+  <button id="submit_answers" class="btn btn-info"
+          data-post-url="{% url 'participations:participate' %}">Envoyer
+  </button>
+  <button id="reset_answers" class="btn btn-info">Reset</button>
 </div>
 {% endblock %}
 {%  block js %}
@@ -158,11 +170,18 @@
               let $form = $(e),
                   answer = $form.find('input[name="answer"]:checked').val()
               if (answer && answer !== $form.data('initial-answer')) {
-                  data.push({name: 'participation', value: JSON.stringify({answer: answer, event: $form.find('input[name="event"]').val()}) })
+                  data.push({
+                      name: 'participation',
+                      value: JSON.stringify({
+                          answer: answer,
+                          event: $form.find('input[name="event"]').val()
+                      })
+                  })
               }
           })
           $.post($(this).data('post-url'), data).done(function (msg) {
               alert(msg)
+              // Reload the page to display the modifications on the table
               location.reload()
           }).fail(function (jqXHR) {
               alert("Http code "+jqXHR.status+" "+jqXHR.responseText)
