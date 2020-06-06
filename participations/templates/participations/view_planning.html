@@ -25,13 +25,13 @@
 <tbody>
 {%  for event in  events%}
   <tr>
-    <td class="bg-dark"> {# events column #}
+    <td class="bg-secondary"> {# events column #}
       <div class="dropright my-1">
         <a id="event_{{ event.id }}" class="dropdown-toggle btn text-white"
            data-toggle="dropdown" aria-expanded="false">
           {{ event.date|date:"d M" }}
         </a>
-        <div class="dropdown-menu" aria-labelledby="event_{{ event.id }}">
+        <div class="dropdown-menu bg-light" aria-labelledby="event_{{ event.id }}">
           <p>{% if event.time %}{{ event.time }}{% endif %}</p>
           <p>{{ event.address }}</p>
           <p>{{ event.description }}</p>
@@ -62,11 +62,11 @@
         </div>
       </div>
     </td>
-    <td class="align-middle"> {# user column #}
-      <div class="dropright my-1">
         {% with participation=event.user_participation %}
+    <td class="align-middle bg-{{ participation.answer|default:"NONE" }}"> {# user column #}
+      <div class="dropright my-1">
           <button id="drop_answer_event-{{ event.pk }}"
-                  class="dropdown-toggle btn btn-{{ participation.answer|default:"NONE" }}"
+                  class="dropdown-toggle btn "
                   data-toggle="dropdown"
                   data-previous-answer="{{ participation.answer|default:"NONE" }}"
                   aria-expanded="false">
@@ -92,7 +92,7 @@
     </td>
     {% for participation in event.other_participations %}
       {# participants column #}
-      <td class="d-none d-md-table-cell align-middle table-{{ participation.answer }}">
+      <td class="d-none d-md-table-cell align-middle bg-{{ participation.answer }}">
         <span>{{ participation.get_answer_display }}</span>
       </td>
     {% endfor %}
@@ -100,10 +100,10 @@
 {% endfor %}
 </tbody>
 </table>
-  <button id="submit_answers" class="btn btn-info"
-          data-post-url="{% url 'participations:participate' %}">Envoyer
-  </button>
-  <button id="reset_answers" class="btn btn-info">Reset</button>
+<button id="submit_answers" class="btn btn-lg btn-primary ml-1"
+        data-post-url="{% url 'participations:participate' %}">Envoyer
+</button>
+<button id="reset_answers" class="btn btn-primary ml-1">Reset</button>
 </div>
 {% endblock %}
 {%  block js %}

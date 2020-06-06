@@ -6,10 +6,11 @@ $(function () {
       */
       function setAnswerDropButton() {
           let $this = $(this),
-              $button = $this.parents(".dropdown-menu").siblings('.dropdown-toggle')
+              $button = $this.parents(".dropdown-menu").siblings('.dropdown-toggle'),
+              $cell = $this.parents('td')
           $button.text($this.data("text"))
-          $button.removeClass("btn-"+$button.data("previous-answer"))
-          $button.addClass("btn-"+$this.val())
+          $cell.removeClass("bg-"+$button.data("previous-answer"))
+          $cell.addClass("bg-"+$this.val())
           $button.data("previous-answer", $this.val())
           $button.dropdown('hide')
       }
@@ -32,6 +33,7 @@ $(function () {
           $('.answer_form').each(function (i,e) {
               let $form = $(e),
                   $button = $form.siblings('.dropdown-toggle'),
+                  $cell = $form.parents('td')
                   $initialInput = $form.find("input[checked]"),
                   initial_text = "",
                   initial_value = "NONE"
@@ -40,9 +42,9 @@ $(function () {
                   initial_value = $initialInput.val()
               }
               $form.trigger("reset")
-              $button.removeClass("btn-"+$button.data("previous-answer"))
+              $cell.removeClass("bg-"+$button.data("previous-answer"))
               $button.text(initial_text)
-              $button.addClass("btn-"+initial_value)
+              $cell.addClass("bg-"+initial_value)
               $button.data("previous-answer", initial_value)
 
           })

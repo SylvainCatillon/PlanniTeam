@@ -1,0 +1,10 @@
+@import "variables_overrides";
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+.event_card {
+  height: 180px;
+  &--deleted {
+    background: grey;
+  }
+}
