@@ -11,15 +11,22 @@ class PlanningsUtilsTestCase(TestCase):
     def test_update_guests(self):
         planning = Planning.objects.first()
         guests = planning.get_guest_emails
-        guest_to_delete = guests.pop(0)
+        guest_to_remain = guests[0]
+        old_guest_pk = planning.guest_emails.get(email=guest_to_remain).pk
+        guest_to_delete = 'deleteguest@test.com'
+        planning.guest_emails.create(email=guest_to_delete)
         guest_to_add = 'newguest@test.com'
         guests.append(guest_to_add)
 
+        self.assertIn(guest_to_remain, planning.get_guest_emails)
         self.assertIn(guest_to_delete, planning.get_guest_emails)
         self.assertNotIn(guest_to_add, planning.get_guest_emails)
 
         update_guests(planning, guests)
         updated_guests = planning.get_guest_emails
+        self.assertIn(guest_to_remain, updated_guests)
+        self.assertEqual(old_guest_pk,
+                         planning.guest_emails.get(email=guest_to_remain).pk)
         self.assertNotIn(guest_to_delete, updated_guests)
         self.assertIn(guest_to_add, updated_guests)
 
