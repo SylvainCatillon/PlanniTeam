@@ -4,9 +4,8 @@ from plannings.models import Planning, Event
 
 
 class PlanningCreationForm(forms.ModelForm):
-    # guests = forms.MultipleChoiceField(
-    #     required=False,
-    #     widget={forms.SelectMultiple(attrs={'hiden'})})
+    """Form for the Planning creation. Contains the fields name and protected
+    with their base widgets, and the field creator as a hidden input."""
 
     class Meta:
         model = Planning
@@ -20,6 +19,9 @@ class PlanningCreationForm(forms.ModelForm):
 
 
 class EventCreationForm(forms.ModelForm):
+    """Form for the Event creation.
+    Contains the fields description and address with their base widgets,
+    and the fields date and time with date and time widgets."""
     class Meta:
         model = Event
         widgets = {
@@ -29,5 +31,6 @@ class EventCreationForm(forms.ModelForm):
         fields = ['date', 'time', 'description', 'address']
 
 
+# Definition of an inlineformset to create events related to a planning
 EventInlineFormSet = forms.inlineformset_factory(
     Planning, Event, form=EventCreationForm, extra=0)

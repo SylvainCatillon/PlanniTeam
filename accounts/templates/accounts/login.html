@@ -27,7 +27,7 @@
   <input class="btn btn-dark" type="submit" value="Connexion">
   <input type="hidden" name="next" value="{{ next }}">
 </form>
-<p class="my-2">Vous n'avez pas de compte? <a href="{%  url 'accounts:create' %}">Créer un compte</a></p>
+<p class="my-2">Vous n'avez pas de compte? <a class="badge badge-primary"  href="{%  url 'accounts:create' %}">Créer un compte</a></p>
 {% endif %}
 </div>
 {%  endblock %}

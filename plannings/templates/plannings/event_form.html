@@ -1,8 +1,15 @@
-<button id="id_{{ form.prefix }}-event_dropdown" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+<button id="id_{{ form.prefix }}-event_dropdown"
+        class="btn btn-secondary text-white dropdown-toggle" data-toggle="dropdown"
+        aria-expanded="false">
   <span>{{ button_text }}</span>
 </button>
-<div class="event_form dropdown-menu bg-light px-2 overflow-auto mw-100 mh-100" aria-labelledby="id_{{ form.prefix}}-event_dropdown" data-prefix="{{ form.prefix }}" data-check-url="{% url 'plannings:check_event' %}">
-  <a class="close" onclick="$('#id_{{ form.prefix}}-event_dropdown').dropdown('hide')"><span aria-hidden="true">&times;</span></a>
+<div class="event_form dropdown-menu bg-light px-2 overflow-auto mw-100 mh-100"
+     aria-labelledby="id_{{ form.prefix }}-event_dropdown"
+     data-prefix="{{ form.prefix }}"
+     data-check-url="{% url 'plannings:check_event' %}">
+  <a class="close"
+     onclick="$('#id_{{ form.prefix }}-event_dropdown').dropdown('hide')">
+    <span aria-hidden="true">&times;</span></a>
   {% for hidden in form.hidden_fields %}
     {{ hidden }}
   {% endfor %}
@@ -15,12 +22,15 @@
     </div>
   </div>
   {% for field in form.visible_fields %}
-  {% if forloop.counter0 > 1 %}
-    <div class="form-group" {% if hide_delete and 'DELETE' in field.name %}style="display: none"{% endif %}>
-      {% include 'core/form_field.html' %}
-    </div>
-  {% endif %}
+    {% if forloop.counter0 > 1 %}
+      <div class="form-group"
+           {% if hide_delete and 'DELETE' in field.name %}style="display: none"{% endif %}>
+        {% include 'core/form_field.html' %}
+      </div>
+    {% endif %}
   {% endfor %}
 
-  <button id="id_{{ form.prefix}}-validate" class="btn btn-info btn-block validate_event">Valider</button>
+  <button id="id_{{ form.prefix }}-validate"
+          class="btn btn-secondary btn-block text-white validate_event">Valider
+  </button>
 </div>

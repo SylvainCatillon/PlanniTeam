@@ -8,7 +8,7 @@ from accounts.forms import CustomUserCreationForm
 
 class CreateView(FormView):
     """Class-based view letting a user create an account.
-    Inherit of the generic Django view 'FormView'"""
+    Inherit of the generic Django view 'FormView'."""
     template_name = 'accounts/create.html'
     form_class = CustomUserCreationForm
     success_url = '/accounts/profile/'
@@ -28,7 +28,9 @@ class CreateView(FormView):
 @login_required
 def profile(request):
     """View of the profile page.
-    Redirects to 'login' if the user isn't logged."""
+    Redirects to 'login' if the user isn't logged.
+    Create a list of all the plannings to which the user participated,
+    to display them in the profile page."""
     user = request.user
     participated = [event.planning for event in
                     user.event_set.order_by('planning').distinct('planning')]

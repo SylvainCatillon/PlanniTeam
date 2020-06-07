@@ -6,6 +6,13 @@ from plannings.models import Event
 
 
 class Participation(models.Model):
+    """Participation Model.
+    Define the participation of a user to an event,
+    with a unique together constraint on fields event and participant.
+    Event: Foreign key to an event.
+    Participant: Foreign key to a user.
+    Answer: Char field containing the user answer. Must be one of the choices
+    defined by answer_choices."""
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     participant = models.ForeignKey(User, on_delete=models.CASCADE)
     answer_choices = [

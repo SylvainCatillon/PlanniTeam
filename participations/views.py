@@ -7,38 +7,37 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from participations.models import Participation
+from participations.utils import prepare_events
 from plannings.models import Planning, Event
 
 
 @require_POST
 def participate(request):
+    """Update the participations of a user. Takes only POST requests."""
     if not request.user.is_authenticated:
         return HttpResponse('Veuillez vous connecter', status=401)  # TODO: changer erreur code? 403?
     for json_part in request.POST.getlist('participation'):
         participation = loads(json_part)
-        # TODO: gestion no event or no answer. get_object_or_404? Mais je ne
-        #   veux pas forcement interrompre la requete si seulement un object
-        #   n'est pas conforme...
-        #   Forbidden interrompt la boucle, mais une partie des objects est
-        #   déjà crée... Use block atomic?
-        event = Event.objects.get(pk=participation['event'])
-        planning = event.planning
-        if not planning.user_has_access(request.user):
-            return HttpResponseForbidden()
-        Participation.objects.update_or_create(
-            participant=request.user, event=event,
-            defaults={'answer': participation['answer']}
-        )
+        # TODO: Use block atomic?
+        answer = participation.get('answer')
+        if answer:
+            event = Event.objects.get(pk=participation['event'])
+            planning = event.planning
+            if not planning.user_has_access(request.user):
+                return HttpResponseForbidden()
+            Participation.objects.update_or_create(
+                participant=request.user, event=event,
+                defaults={'answer': answer}
+            )
     return HttpResponse('Votre participation est enregistrée')
 
 
 # TODO:
-#   -gestion de planning inexistant, get_by_ekey_or_404 ou message custom
-#   -utilisation d'un modelForm avec widget RadioSelect
-#   -refactor en plusieurs fonctions
+#   -custom message instead of 404 if the planning doesn't exist
 @login_required
 def view_planning(request, planning_ekey):
-    planning = Planning.objects.get_by_ekey(planning_ekey)
+    """View to display a planning."""
+    planning = Planning.objects.get_by_ekey_or_404(planning_ekey)
     if not planning.user_has_access(request.user):
         return render(request, 'participations/protected_planning.html')
 
@@ -50,27 +49,9 @@ def view_planning(request, planning_ekey):
         if user != request.user:
             other_participants.append(user)
 
-    # Gather all the planning's events, and add information to display
-    events = list(planning.event_set.all())
-    #  TODO: Voir prefetch_related pour optimisation.
-    #   Voir noms variables
-    for event in events:
-        # Set the participations as None, to have a sequence of participations
-        # in the same order that the other_participants list.
-        # Each item will be the participation if founded, or the default None
-        event.other_participations = [None]*len(other_participants)
-        event.user_participation = None
-        # Participations_summary is a dict {answer: list of participants name},
-        # to display a summary of the answers in the planning
-        event.participations_summary = {'YES': [], 'MAYBE': [], 'NO': []}
-        for part in event.participation_set.all():
-            event.participations_summary[part.answer].append(
-                part.participant.first_name)
-            if part.participant == request.user:
-                event.user_participation = part
-            elif part.participant in other_participants:
-                p_index = other_participants.index(part.participant)
-                event.other_participations[p_index] = part
+    # Gather all the planning's events, and prepare them to be displayed
+    events = prepare_events(list(planning.event_set.all()),
+                            request.user, other_participants)
 
     context = {'planning': planning,
                'other_participants': other_participants,

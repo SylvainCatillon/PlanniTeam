@@ -27,16 +27,10 @@ def create_planning(request):
     if request.method == 'POST':
         planning_form = PlanningCreationForm(request.POST)
         if planning_form.is_valid():
-            # TODO: with transaction.atomic(),
-            #  pour éviter un planning incomplet?
-            #  Ou planning_form.save(commit=false)?
-            #  Mais pas forcement grave, comme on peut le modifier...
             planning = planning_form.save()
 
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
-                # TODO: ne pas sauver planning si events invalides?
-                #  Renvoyer errors?
                 event_formset.save()
 
             if planning.protected:
@@ -45,7 +39,8 @@ def create_planning(request):
 
             return redirect('plannings:created', planning.ekey)
     else:
-        planning_form = PlanningCreationForm(initial={'creator': request.user.pk})
+        planning_form = PlanningCreationForm(
+            initial={'creator': request.user.pk})
     event_formset = EventInlineFormSet()
     context = {'planning_form': planning_form,
                'event_formset': event_formset,
@@ -57,7 +52,7 @@ def create_planning(request):
 def check_event(request):
     """
     Checks if the event form is valid.
-    If it's valid, returns the event data as Json.
+    If it's valid, returns a Http Response with code 200.
     If it's not, returns the form errors as Json, and the Http code 422.
     Accept only POST request.
     """
@@ -68,21 +63,33 @@ def check_event(request):
         return HttpResponse(form.errors.as_json(), status=422)
 
 
-def planning_created(request, planning_ekey): # TODO: Remplacer par TemplateView en créant link dans create??
+def planning_created(request, planning_ekey):
     """After a planning was created, displays a page with the access link
     of the planning."""
     planning = Planning.objects.get_by_ekey(planning_ekey)
-    link = request.build_absolute_uri(planning.get_absolute_url())  # TODO: security hole? Remplacer par link = get_current_site(request) ou gestion desite framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
+    # TODO: Voir link = get_current_site(request) ou
+    #  gestion de site framework: https://docs.djangoproject.com/en/3.0/ref/contrib/sites/#getting-the-current-domain-for-full-urls
+    #  pour création du lien
+    link = request.build_absolute_uri(planning.get_absolute_url())
     return render(request, 'plannings/created.html', {'link': link})
 
 
 @login_required
 def edit_planning(request, planning_ekey):
-    planning = Planning.objects.get_by_ekey(planning_ekey) # TODO or 404?
-    self_url = reverse('plannings:edit', # TODO method django?
-                       kwargs={'planning_ekey': planning_ekey})
+    """
+    GET method:
+        Displays the planning edition page
+    POST method:
+        -Gather the data of the planning form.
+        -Test if the planning's form is valid.
+        -Update the planning in the database
+        -If the planning is protected, update the guests emails in the planning
+        -Update the events in the planning
+        -Redirects to the planning's display.
+    """
+    planning = Planning.objects.get_by_ekey_or_404(planning_ekey)
     if request.user != planning.creator:
-        redirect_url = f"{reverse('accounts:login')}?next={self_url}"
+        redirect_url = f"{reverse('accounts:login')}?next={request.path}"
         return HttpResponseRedirect(redirect_url)
 
     if request.method == 'POST':
@@ -95,8 +102,6 @@ def edit_planning(request, planning_ekey):
 
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
-                # TODO: ne pas sauver planning si events invalides?
-                #  Renvoyer errors?
                 event_formset.save()
 
             return redirect('participations:view', planning.ekey)
@@ -107,4 +112,4 @@ def edit_planning(request, planning_ekey):
                   'plannings/create_planning.html',
                   {'event_formset': event_formset,
                    'planning_form': planning_form,
-                   'form_url': self_url})
+                   'form_url': request.path})
