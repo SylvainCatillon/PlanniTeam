@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import  tag
 from django.urls import reverse
 from django.conf import settings
 
 from selenium.webdriver.firefox.webdriver import WebDriver
 
 
-class TestFunctionalAccounts(LiveServerTestCase):
+class TestFunctionalAccounts(StaticLiveServerTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -23,6 +24,7 @@ class TestFunctionalAccounts(LiveServerTestCase):
         cls.driver.quit()
         super().tearDownClass()
 
+    @tag('selenium')
     def test_create_account(self):
         self.driver.get(self.live_server_url + reverse("accounts:create"))
         username = self.driver.find_element_by_name("email")
@@ -41,8 +43,9 @@ class TestFunctionalAccounts(LiveServerTestCase):
         body = self.driver.find_element_by_tag_name('body')
         self.assertIn(self.user_info['first_name'], body.text)
 
+    @tag('selenium')
     def tests_login(self):
-        user = get_user_model().objects.create_user(**self.user_info)
+        get_user_model().objects.create_user(**self.user_info)
 
         self.driver.get(self.live_server_url+reverse("accounts:login"))
         username = self.driver.find_element_by_name("username")
