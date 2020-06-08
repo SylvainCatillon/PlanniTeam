@@ -1,16 +1,4 @@
-{%  extends 'core/base.html' %}
-{%  block content %}
-  <div class="container">
-    <p>Planning créé</p>
-    <a id="PlanningLink" href="{{ link }}">{{ link }}</a>
-    <br>
-    <button id="CopyButton" class="btn btn-info">Copier le lien</button>
-  </div>
-{% endblock %}
-{%  block js %}
-{{  block.super }}
-  <script type="text/javascript">
-  $(function () {
+$(function () {
 
       /*
       Copy the planning's link in the clipboard when the copy button is clicked
@@ -20,10 +8,10 @@
       -use the command 'copy'
       -delete the temp input
        */
-      $("#CopyButton").on("click", function () {
+      $("#copy_button").on("click", function () {
           let $temp = $("<input/>")
           $("body").append($temp)
-          $temp.val($('#PlanningLink').attr("href")).select()
+          $temp.val($('#planning_link').attr("href")).select()
           let success = document.execCommand("copy")
           $temp.remove()
           if (success) {
@@ -34,5 +22,3 @@
       })
 
   })
-  </script>
-{% endblock %}

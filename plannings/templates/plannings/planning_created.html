@@ -1,0 +1,22 @@
+{%  extends 'core/base.html' %}
+{% load static %}
+{%  block content %}
+<div class="container text-center">
+  <h2>Vous venez de créer le planning "<span class="text-secondary">{{ planning.name }}</span>" !</h2>
+  <br>
+  <h6>
+    Vous pouvez retrouver ce planning dans votre compte, ou y accéder via le lien suivant
+  </h6>
+  {% if planning.protected %}
+  <p class="text-muted">Ce lien a été automatiquement envoyé par courriel à vos invités</p>
+  {% endif %}
+  <p class="text-break ">
+  <a class="bg-dark rounded" id="planning_link" href="{{ link }}">{{ link }}</a>
+  </p>
+  <button id="copy_button" class="btn btn-primary mt-2">Copier le lien</button>
+</div>
+{% endblock %}
+{%  block js %}
+{{  block.super }}
+  <script src="{% static 'plannings/js/planning_created.js' %}"></script>
+{% endblock %}

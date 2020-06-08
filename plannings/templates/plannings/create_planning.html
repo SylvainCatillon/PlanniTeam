@@ -45,11 +45,15 @@
   <div id="created_events_container"
        class="bg-light row my-3 p-1 rounded overflow-auto
        row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5"
-       style="height: 200px"
   >
     {% for form in event_formset.forms %}
     {% include 'plannings/event_card.html' with display_form=True button_text='Modifier' %}
     {% endfor %}
+  </div>
+
+  <div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use modal instead? #}
+    <button type="button" class="close" data-dismiss="alert">x</button>
+    <strong>Succès! </strong> Les informations sont valides.
   </div>
 
   <br>
@@ -66,64 +70,59 @@
     <input type="hidden" value="{{ email }}" name="guest_email">
   {% endfor %}
 </form>
-<div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use modal instead? #}
-  <button type="button" class="close" data-dismiss="alert">x</button>
-  <strong>Succès! </strong> Les informations sont valides.
-</div>
 
-  <div id="edit_guests_container"
-       class="mb-3 p-2 border border-dark rounded dropdown"
-       style="display: none">
+<div id="edit_guests_container"
+     class="mb-3 p-2 border border-dark rounded dropdown"
+     style="display: none">
 
-    <form id="add_guest_form">
-      <div class="input-group">
-        <input class="form-control" id="add_guest_input" type="email"
-               name="add_guest" placeholder="invité@exemple.com" required>
-        <div class="input-group-append">
-          <button id="add_guest_submit" class="btn btn-primary">
-            <label for="add_guest_input" style="display: inline">
-              Ajouter cet email
-            </label>
-          </button>
-        </div>
+  <form id="add_guest_form">
+    <div class="input-group">
+      <input class="form-control" id="add_guest_input" type="email"
+             name="add_guest" placeholder="invité@exemple.com" required>
+      <div class="input-group-append">
+        <button id="add_guest_submit" class="btn btn-primary">
+          <label for="add_guest_input" style="display: inline">
+            Ajouter cet email
+          </label>
+        </button>
       </div>
-    </form>
-
-    <div id="guests_display"
-         class="bg-light my-3 rounded overflow-auto text-center"
-         style="height: 100px">
-      {% for email in planning_form.instance.guest_emails.all %}
-        <p id="id_{{ email }}">{{ email }}</p>
-      {% endfor %}
     </div>
+  </form>
+
+  <div id="guests_display"
+       class="bg-light my-3 rounded overflow-auto text-center">
+    {% for email in planning_form.instance.guest_emails.all %}
+      <p id="id_{{ email }}">{{ email }}</p>
+    {% endfor %}
+  </div>
 
 
-    <div class="dropup">
-      <button id="delete_guest_dropdown"
-              class="btn btn-danger mt-2 dropdown-toggle"
-              data-toggle="dropdown" aria-expanded="false">
-        Supprimer des emails
-      </button>
-      <div id="guests_select_form" class="form-group text-center dropdown-menu"
-           aria-labelledby="delete_guest_dropdown">
-        <a class="close"
-           onclick="$('#delete_guest_dropdown').dropdown('hide')">
-          <span aria-hidden="true">&times;</span></a>
-        <div class="form-group">
-          <label for="guest_emails_select">Emails sélectionnés</label>
-          <select id="guest_emails_select" class="form-control mb-2"
-                  name="emails_to_delete" multiple>
-            {% for email in planning_form.instance.guest_emails.all %}
-              <option value="{{ email }}">{{ email }}</option>
-            {% endfor %}
-          </select>
-          <button id="delete_guest_submit" class="btn btn-danger">
-            <span>Supprimer ces emails</span>
-          </button>
-        </div>
+  <div class="dropup">
+    <button id="delete_guest_dropdown"
+            class="btn btn-danger mt-2 dropdown-toggle"
+            data-toggle="dropdown" aria-expanded="false">
+      Supprimer des emails
+    </button>
+    <div id="guests_select_form" class="form-group text-center dropdown-menu"
+         aria-labelledby="delete_guest_dropdown">
+      <a class="close"
+         onclick="$('#delete_guest_dropdown').dropdown('hide')">
+        <span aria-hidden="true">&times;</span></a>
+      <div class="form-group">
+        <label for="guest_emails_select">Emails sélectionnés</label>
+        <select id="guest_emails_select" class="form-control mb-2"
+                name="emails_to_delete" multiple>
+          {% for email in planning_form.instance.guest_emails.all %}
+            <option value="{{ email }}">{{ email }}</option>
+          {% endfor %}
+        </select>
+        <button id="delete_guest_submit" class="btn btn-danger">
+          <span>Supprimer ces emails</span>
+        </button>
       </div>
     </div>
   </div>
+</div>
 
 <br>
 
@@ -135,7 +134,5 @@
 {% endblock %}
 {% block js %}
   {{ block.super }}
-  <script src="{% static 'plannings/js/create_planning.js' %}">
-
-  </script>
+  <script src="{% static 'plannings/js/create_planning.js' %}"></script>
 {%  endblock %}

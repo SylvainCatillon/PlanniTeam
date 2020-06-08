@@ -1,43 +1,29 @@
 {%  extends 'core/base.html' %}
 {% load static %}
 {% block content %}
-  <div class="container text-center">
+<div class="container text-center">
   <h1 class="text-secondary">Bienvenue sur PlanniTeam!</h1>
-    <h4>PlanniTeam vous permet de coordonner vos événements d'équipe.</h4>
-    {% if not user.is_authenticated %}
-  <h5>Pour commencer, veuillez <a class="badge badge-primary"  href="{%  url 'accounts:create' %}">créer un compte</a> ou <a class="badge badge-primary" href="{% url 'accounts:login' %}">vous connecter</a></h5>
-    {% endif %}
-    <div id="carousel_home" class="carousel slide" data-ride="carousel">
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-        <img src="{% static 'core/img/accueil1.jpg' %}" alt="slide1"  class="d-block w-100">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'core/img/accueil2.jpg' %}" alt="slide2" class="d-block w-100">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'core/img/accueil3.jpg' %}" alt="slide3" class="d-block w-100">
+  <h4>PlanniTeam vous permet de coordonner vos événements d'équipe.</h4>
+  {% if not user.is_authenticated %}
+  <h5>
+    Pour commencer, veuillez
+    <a class="badge badge-primary"  href="{%  url 'accounts:create' %}">créer un compte</a>
+    ou <a class="badge badge-primary" href="{% url 'accounts:login' %}">vous connecter</a>
+  </h5>
+  {% endif %}
+  <br>
+  <div id="carousel_home" class="carousel slide" data-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+          <img src="{% static 'core/img/accueil1.jpg' %}" alt="Coordonnez votre équipe en toute simplicité"  class="d-block w-100">
+      </div>
+      <div class="carousel-item">
+        <img src="{% static 'core/img/accueil2.jpg' %}" alt="Donnez vos disponibilités en un clic" class="d-block w-100">
+      </div>
+      <div class="carousel-item">
+        <img src="{% static 'core/img/accueil3.jpg' %}" alt="Ajoutez un nouvel événement à tout moment" class="d-block w-100">
+      </div>
     </div>
   </div>
 </div>
-
-{#    <div class="row">#}
-{#    <div class="col-md-3" style="background-color: blue"></div>#}
-{#      <div class="col-md-9 bg-white">#}
-{#  <img src="{% static 'core/img/accueil1.jpg' %}" alt="slide1" class="img-fluid  m-3">#}
-{#      </div>#}
-{#      </div>#}
-{#    <div class="row">#}
-{#      <div class="col-md-9 bg-white">#}
-{#  <img src="{% static 'core/img/accueil2.jpg' %}" alt="slide2" class="img-fluid  m-3">#}
-{#      </div>#}
-{#    <div class="col-md-3" style="background-color: blue"></div>#}
-{#    </div>#}
-{#    <div class="row">#}
-{#    <div class="col-md-3" style="background-color: blue"></div>#}
-{#      <div class="col-md-9 bg-white">#}
-{#  <img src="{% static 'core/img/accueil3.jpg' %}" alt="slide3" class="img-fluid  m-3">#}
-{#      </div>#}
-{#  </div>#}
-  </div>
 {% endblock %}
