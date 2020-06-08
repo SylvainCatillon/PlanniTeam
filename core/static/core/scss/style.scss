@@ -4,8 +4,13 @@
 
 .event_card {
   height: 180px;
+  &, & .card-header, & .card-body {
+    background-color: $primary;
+  }
   &--deleted {
-    background: grey;
+    &, & .card-header, & .card-body {
+      background-color: $medium;
+    }
   }
 }
 

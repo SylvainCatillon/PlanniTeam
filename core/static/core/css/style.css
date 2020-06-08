@@ -10460,8 +10460,11 @@ h3 {
 .event_card {
   height: 180px;
 }
-.event_card--deleted {
-  background: grey;
+.event_card, .event_card .card-header, .event_card .card-body {
+  background-color: #FFD173;
+}
+.event_card--deleted, .event_card--deleted .card-header, .event_card--deleted .card-body {
+  background-color: #A8A8A8;
 }
 
 #created_events_container {
