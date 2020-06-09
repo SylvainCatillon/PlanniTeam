@@ -112,6 +112,9 @@ class PlanningCreationViewTest(TestCase):
 
         # The planning has all the wanted attributes
         self.assertTrue(planning.protected)
+        planning_guests = planning.get_guest_emails
+        for email in params['guest_email']:
+            self.assertIn(email, planning_guests)
         self.assertEqual(
             params['guest_email'],
             planning.get_guest_emails)
@@ -202,9 +205,9 @@ class PlanningCreationViewTest(TestCase):
         # The planning has all the wanted attributes
         self.assertEqual(params.get('creator'), planning.creator.pk)
         self.assertTrue(planning.protected)
-        self.assertEqual(
-            params['guest_email'],
-            planning.get_guest_emails)
+        planning_guests = planning.get_guest_emails
+        for email in params['guest_email']:
+            self.assertIn(email, planning_guests)
         for event in self.events_data:
             created_event = planning.event_set.get(date=event['date'])
             for key, value in event.items():
