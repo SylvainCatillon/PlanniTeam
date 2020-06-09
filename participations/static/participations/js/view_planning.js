@@ -1,10 +1,10 @@
 $(function () {
 
       /*
-      Set the text and the color of the answer's dropdown button, with the
+      Set the text and the color of the user participation cell, with the
       values of the checked answer.
       */
-      function setAnswerDropButton() {
+      function setAnswerCell() {
           let $this = $(this),
               $button = $this.parents(".dropdown-menu").siblings('.dropdown-toggle'),
               $cell = $this.parents('td')
@@ -21,10 +21,10 @@ $(function () {
       This is set by a script, because firefox keep cached the precedent form change
       after a page reload.
        */
-      $('input[type="radio"][name="answer"]:checked').each(setAnswerDropButton)
+      $('input[type="radio"][name="answer"]:checked').each(setAnswerCell)
 
       // Set the answer's dropdown button on every answer change
-      $('input[type="radio"][name="answer"]').on("change", setAnswerDropButton)
+      $('input[type="radio"][name="answer"]').on("change", setAnswerCell)
 
       /*
       Reset all the answers' forms and their dropdown buttons on reset button click
