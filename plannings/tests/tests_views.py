@@ -115,9 +115,6 @@ class PlanningCreationViewTest(TestCase):
         planning_guests = planning.get_guest_emails
         for email in params['guest_email']:
             self.assertIn(email, planning_guests)
-        self.assertEqual(
-            params['guest_email'],
-            planning.get_guest_emails)
         self.assertEqual(params['creator'], planning.creator.pk)
 
     def test_get_check_event_throw_405(self):
