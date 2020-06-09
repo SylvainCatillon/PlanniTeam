@@ -5,10 +5,21 @@
 <h3 class="text-center">{{ planning.name }}</h3>
 <br>
 {% if user == planning.creator %}
-  <a class="btn btn-block btn-dark"
+   <button id="intro_collapse_button" class="btn btn-sm float-right" type="button"
+        data-toggle="collapse" data-target="#intro_text" aria-expanded="false"
+        aria-controls="collapseExample" aria-label="Switch intro">
+  <i class="far fa-eye-slash"></i>
+  </button>
+  <div class=" text-center mt-3 rounded collapse show" id="intro_text">
+  <h6>Lien d'accès au planning</h6>
+  <p class="text-break ">
+  <a class="bg-dark rounded" id="planning_link" href="{{ request.build_absolute_uri }}">{{ request.build_absolute_uri }}</a>
+  </p>
+  <button id="copy_button" class="btn btn-primary mt-2 mb-1">Copier le lien</button>
+</div>
+  <a class="btn btn-dark my-3"
      href="{% url 'plannings:edit' planning_ekey=planning.ekey %}">
     Modifier le planning</a>
-  <br>
 {% endif %}
 {% csrf_token %}
 <table class="table table-bordered text-center">
@@ -104,15 +115,6 @@
         data-post-url="{% url 'participations:participate' %}">Envoyer mes réponses
 </button>
 <button id="reset_answers" class="btn btn-primary ml-1">Reset</button>
-{% if user == planning.creator %}
-<div class="border border-medium text-center mt-3 rounded">
-<h6>Lien d'accès au planning</h6>
-<p class="text-break ">
-<a class="bg-dark rounded" id="planning_link" href="{{ request.build_absolute_uri }}">{{ request.build_absolute_uri }}</a>
-</p>
-<button id="copy_button" class="btn btn-primary mt-2 mb-1">Copier le lien</button>
-</div>
-{% endif %}
 </div>
 {% endblock %}
 {%  block js %}

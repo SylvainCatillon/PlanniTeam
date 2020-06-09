@@ -112,8 +112,9 @@ class PlanningCreationViewTest(TestCase):
 
         # The planning has all the wanted attributes
         self.assertTrue(planning.protected)
-        self.assertEqual(params['guest_email'],
-                         [e.email for e in planning.guest_emails.all()])
+        self.assertEqual(
+            params['guest_email'],
+            planning.get_guest_emails)
         self.assertEqual(params['creator'], planning.creator.pk)
 
     def test_get_check_event_throw_405(self):
@@ -201,8 +202,9 @@ class PlanningCreationViewTest(TestCase):
         # The planning has all the wanted attributes
         self.assertEqual(params.get('creator'), planning.creator.pk)
         self.assertTrue(planning.protected)
-        self.assertEqual(params['guest_email'],
-                         [e.email for e in planning.guest_emails.all()])
+        self.assertEqual(
+            params['guest_email'],
+            planning.get_guest_emails)
         for event in self.events_data:
             created_event = planning.event_set.get(date=event['date'])
             for key, value in event.items():
