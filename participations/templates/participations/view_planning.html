@@ -101,12 +101,22 @@
 </tbody>
 </table>
 <button id="submit_answers" class="btn btn-lg btn-primary ml-1"
-        data-post-url="{% url 'participations:participate' %}">Envoyer
+        data-post-url="{% url 'participations:participate' %}">Envoyer mes réponses
 </button>
 <button id="reset_answers" class="btn btn-primary ml-1">Reset</button>
+{% if user == planning.creator %}
+<div class="border border-medium text-center mt-3 rounded">
+<h6>Lien d'accès au planning</h6>
+<p class="text-break ">
+<a class="bg-dark rounded" id="planning_link" href="{{ request.build_absolute_uri }}">{{ request.build_absolute_uri }}</a>
+</p>
+<button id="copy_button" class="btn btn-primary mt-2 mb-1">Copier le lien</button>
+</div>
+{% endif %}
 </div>
 {% endblock %}
 {%  block js %}
 {{  block.super }}
   <script src="{% static 'participations/js/view_planning.js' %}"></script>
+  <script src="{% static 'plannings/js/#copy_button.js' %}"></script>
 {% endblock %}

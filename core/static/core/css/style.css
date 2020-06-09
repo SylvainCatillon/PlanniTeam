@@ -10468,7 +10468,7 @@ h3 {
 }
 
 #created_events_container {
-  height: 300px;
+  max-height: 300px;
 }
 
 #guests_display {
