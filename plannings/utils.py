@@ -8,20 +8,19 @@ def update_guests(planning, new_emails):
     -Delete the emails of the plannings which aren't on the new list
     -Add the emails of the new list which aren't in the planning's guests"""
     old_emails = planning.get_guest_emails
-    for email in new_emails:
-        if email in old_emails:
-            old_emails.remove(email)
-            new_emails.remove(email)
+    # emails_to_delete = emails which are in old_emails but not in new_emails
+    emails_to_delete = list(set(old_emails) - set(new_emails))
+    # emails_to_add = emails which are in new_emails but not in old_emails
+    emails_to_add = list(set(new_emails) - set(old_emails))
 
-    planning.guest_emails.filter(email__in=old_emails).delete()
-    add_guests(planning, new_emails)
+    planning.guest_emails.filter(email__in=emails_to_delete).delete()
+    add_guests(planning, emails_to_add)
 
 
 def add_guests(planning, emails):
     """Add guests in a planning.
-    Takes as args a Planning object and an list of emails."""
+    Takes as args a Planning object and a list of emails."""
+    guests = []
     for email in emails:
-        try:
-            planning.guest_emails.add(GuestEmail.objects.get(email=email))
-        except GuestEmail.DoesNotExist:
-            planning.guest_emails.create(email=email)
+        guests.append(GuestEmail.objects.get_or_create(email=email)[0])
+    planning.guest_emails.add(*guests)

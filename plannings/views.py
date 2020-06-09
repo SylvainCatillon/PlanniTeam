@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-
+from notifications.Notifier import Notifier
 from plannings.forms import PlanningCreationForm, EventCreationForm, \
     EventInlineFormSet
 from plannings.models import Planning
@@ -101,6 +101,8 @@ def edit_planning(request, planning_ekey):
             event_formset = EventInlineFormSet(request.POST, instance=planning)
             if event_formset.is_valid():
                 event_formset.save()
+                notifier = Notifier(planning)
+                notifier.notify_events_changes(event_formset)
 
             return redirect('participations:view', planning.ekey)
 

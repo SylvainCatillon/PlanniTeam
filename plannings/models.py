@@ -14,6 +14,9 @@ class GuestEmail(models.Model):
     def __str__(self):
         return self.email
 
+    class Meta:
+        ordering = ['email']
+
 
 class Planning(EncryptedIDModel):
     """Planning Model.

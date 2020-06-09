@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'plannings.apps.PlanningsConfig',
     'participations.apps.ParticipationsConfig',
+    'notifications.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,11 @@ AUTH_USER_MODEL = 'accounts.User'
 # Url to redirect to after logout
 
 LOGOUT_REDIRECT_URL = '/accounts/login'
+
+# emails
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'planniteam@gmail.com'
+EMAIL_HOST_PASSWORD = '78220Nocsivag'  # TODO : variable d'enviromnemt

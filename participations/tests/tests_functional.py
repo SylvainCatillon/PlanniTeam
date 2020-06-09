@@ -13,7 +13,7 @@ from plannings.models import Planning, Event
 
 
 class TestFunctionalPlanningParticipation(StaticLiveServerTestCase):
-    fixtures = ['plannings', 'users', 'participations']
+    fixtures = ['users', 'plannings', 'participations']
 
     @classmethod
     def setUpClass(cls):

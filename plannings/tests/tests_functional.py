@@ -99,7 +99,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
 
 
 class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
-    fixtures = ['plannings', 'users']
+    fixtures = ['users', 'plannings']
 
     @classmethod
     def setUpClass(cls):
