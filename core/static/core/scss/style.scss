@@ -1,0 +1,27 @@
+@import "variables_overrides";
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+.event_card {
+  height: 180px;
+  &, & .card-header, & .card-body {
+    background-color: $primary;
+  }
+  &--deleted {
+    &, & .card-header, & .card-body {
+      background-color: $medium;
+    }
+  }
+}
+
+#created_events_container {
+  max-height: 300px;
+}
+
+#guests_display {
+  height: 100px;
+}
+
+.btn-secondary {
+  color: white;
+}

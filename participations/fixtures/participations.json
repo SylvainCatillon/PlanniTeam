@@ -1,0 +1,72 @@
+[
+    {
+    "model": "accounts.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$fMt9YeuSlAo1$qaehha49QdO31gDZiRgTynaIYSlkg3q2hbJUdC7JUEo=",
+        "last_login": null,
+        "is_superuser": false,
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-05-16T16:32:23.350Z",
+        "email": "b_mate@test.com",
+        "first_name": "B mate",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "accounts.user",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$180000$fMt9YeuSlAo1$qaehha49QdO31gDZiRgTynaIYSlkg3q2hbJUdC7JUEo=",
+        "last_login": null,
+        "is_superuser": false,
+        "last_name": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2020-05-16T16:32:23.350Z",
+        "email": "a_mate@test.com",
+        "first_name": "A mate",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "participations.participation",
+    "pk": 1,
+    "fields": {
+        "event": 1,
+        "participant": 2,
+        "answer": "YES"
+    }
+},
+{
+    "model": "participations.participation",
+    "pk": 2,
+    "fields": {
+        "event": 2,
+        "participant": 4,
+        "answer": "NO"
+    }
+},
+{
+    "model": "participations.participation",
+    "pk": 3,
+    "fields": {
+        "event": 1,
+        "participant": 5,
+        "answer": "NO"
+    }
+},
+{
+    "model": "participations.participation",
+    "pk": 4,
+    "fields": {
+        "event": 2,
+        "participant": 5,
+        "answer": "MAYBE"
+    }
+}
+]

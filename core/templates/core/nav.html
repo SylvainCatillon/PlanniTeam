@@ -1,0 +1,32 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-primary static-top mb-3">
+<div class="container">
+<a class="navbar-brand" href="{% url 'index' %}">
+  <img src="{% static 'core/img/logo.png' %}" alt="logo" class="img-fluid">
+</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse"
+          data-target="#navbar_responsive" aria-controls="navbar_responsive"
+          aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse font-weight-bold" id="navbar_responsive">
+  <ul class="navbar-nav ml-auto">
+    {% url 'index' as url %}
+    {% include 'core/nav_item.html' with title='Accueil' %}
+    {%  if user.is_authenticated %}
+    {% url 'plannings:create' as url %}
+    {% include 'core/nav_item.html' with title='Créer un planning' %}
+    {% url 'accounts:profile' as url %}
+    {% include 'core/nav_item.html' with title='Mon compte' %}
+    {% url 'accounts:logout' as url %}
+    {% include 'core/nav_item.html' with title='Déconnexion' %}
+    {%  else %}
+    {% url 'accounts:create' as url %}
+    {% include 'core/nav_item.html' with title='Créer un compte' %}
+    {% url 'accounts:login' as url %}
+    {% include 'core/nav_item.html' with title='Connexion' %}
+    {%  endif %}
+  </ul>
+</div>
+</div>
+</nav>

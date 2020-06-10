@@ -1,0 +1,10 @@
+{%  extends 'core/base.html' %}
+{% block content %}
+  <div class="container">
+    <h5>Bonjour {{ user.first_name }}.</h5>
+    <br>
+    <p>Ce planning est protégé, et vous n'avez pas été invité-e à y participer.</p>
+    <p>Veuillez vous connecter avec une adresse invitée, ou demander à être invité-e</p>
+    <p>Vous êtes actuellement connecté-e avec l'adresse <i>{{ user.email }}</i></p>
+  </div>
+{% endblock %}

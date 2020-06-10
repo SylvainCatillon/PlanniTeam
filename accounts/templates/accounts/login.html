@@ -1,5 +1,6 @@
-{%  extends 'accounts/base.html' %}
+{%  extends 'core/base.html' %}
 {% block content %}
+<div class="container text-center">
 {% if form.errors %}
 {% for error in form.errors.values %}
   <p >{{ error }}</p>
@@ -16,18 +17,17 @@
 {% if user.is_authenticated %}
 <p>Vous êtes déjà connecté</p>
 {% else %}
-  <form method="post" action="{% url 'accounts:login' %}">
+<form method="post" action="{% url 'accounts:login' %}">
   {% csrf_token %}
-  <table>
   {%  for field in form %}
-  <tr>
-    <td>{{ field.label_tag }}</td>
-    <td>{{ field }}</td>
-  </tr>
+  <div class="form-group  col-lg-4 offset-lg-4">
+    {% include 'core/form_field.html' %}
+  </div>
   {%  endfor %}
-  </table>
-  <input type="submit" value="login">
+  <input class="btn btn-dark" type="submit" value="Connexion">
   <input type="hidden" name="next" value="{{ next }}">
-  </form>
+</form>
+<p class="my-2">Vous n'avez pas de compte? <a class="badge badge-primary"  href="{%  url 'accounts:create' %}">Créer un compte</a></p>
 {% endif %}
+</div>
 {%  endblock %}

@@ -105,4 +105,3 @@ class LoggedUserTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.user.email)
         self.assertContains(response, self.user.first_name)
-

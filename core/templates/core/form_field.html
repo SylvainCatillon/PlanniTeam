@@ -1,0 +1,16 @@
+{% load widget_tweaks %}
+{% if field|widget_type == 'checkboxinput' %}
+  {{ field|add_label_class:"form-check-label"}}
+  {{ field|add_class:"form-chek-input" }}
+{% else %}
+  {{ field.label_tag }}
+  {{ field|add_class:"form-control" }}
+{% endif %}
+{% if field.help_text %}
+<small class="form-text text-muted">{{ field.help_text }}</small>
+{% endif %}
+<div id="{{ field.id_for_label }}_errors" class="text-danger field_errors">
+  {% for error in field.errors %}
+    <p>{{ field.errors }}</p>
+  {% endfor %}
+</div>

@@ -1,0 +1,124 @@
+{%  extends 'core/base.html' %}
+{% load static %}
+{%  block content %}
+<div class="container table-responsive">
+<h3 class="text-center">{{ planning.name }}</h3>
+<br>
+{% if user == planning.creator %}
+   <button id="intro_collapse_button" class="btn btn-sm float-right" type="button"
+        data-toggle="collapse" data-target="#intro_text" aria-expanded="false"
+        aria-controls="collapseExample" aria-label="Switch intro">
+  <i class="far fa-eye-slash"></i>
+  </button>
+  <div class=" text-center mt-3 rounded collapse show" id="intro_text">
+  <h6>Lien d'accès au planning</h6>
+  <p class="text-break ">
+  <a class="bg-dark rounded" id="planning_link" href="{{ request.build_absolute_uri }}">{{ request.build_absolute_uri }}</a>
+  </p>
+  <button id="copy_button" class="btn btn-primary mt-2 mb-1">Copier le lien</button>
+</div>
+  <a class="btn btn-dark my-3"
+     href="{% url 'plannings:edit' planning_ekey=planning.ekey %}">
+    Modifier le planning</a>
+{% endif %}
+{% csrf_token %}
+<table class="table table-bordered text-center">
+<thead class="thead-light">
+<tr>
+  <th class="text-muted">Événements</th>
+  <th class="text-muted">Dispos</th>
+  <th scope="col">{{ user.first_name }}</th>
+  {% for participant in other_participants %}
+    <th scope="col" class="d-none d-md-table-cell">{{ participant.first_name }}</th>
+  {%  endfor %}
+</tr>
+</thead>
+<tbody>
+{%  for event in  events%}
+  <tr>
+    <td class="bg-secondary"> {# events column #}
+      <div class="dropright my-1">
+        <a id="event_{{ event.id }}" class="dropdown-toggle btn text-white"
+           data-toggle="dropdown" aria-expanded="false">
+          {{ event.date|date:"d M" }}
+        </a>
+        <div class="dropdown-menu bg-light" aria-labelledby="event_{{ event.id }}">
+          <p>{% if event.time %}{{ event.time }}{% endif %}</p>
+          <p>{{ event.address }}</p>
+          <p>{{ event.description }}</p>
+        </div>
+      </div>
+    </td>
+    <td> {# availabilities column #}
+      <div class="dropright">
+        <button id="summary_{{ event.id }}" class="dropdown-toggle btn"
+                data-toggle="dropdown" aria-expanded="false">
+          <span>{{ event.participations_summary.YES|length }} oui</span>
+        </button>
+        <div class="dropdown-menu" aria-labelledby="summary_{{ event.id }}">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item list-group-item-YES">
+              <h5 >Oui</h5>
+              {{ event.participations_summary.YES|join:", " }}
+            </li>
+            <li class="list-group-item list-group-item-MAYBE">
+              <h5 >Peut-être</h5>
+              {{ event.participations_summary.MAYBE|join:", " }}
+            </li>
+            <li class="list-group-item list-group-item-NO">
+              <h5 >Non</h5>
+              {{ event.participations_summary.NO|join:", " }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </td>
+        {% with participation=event.user_participation %}
+    <td class="align-middle bg-{{ participation.answer|default:"NONE" }}"> {# user column #}
+      <div class="dropright my-1">
+          <button id="drop_answer_event-{{ event.pk }}"
+                  class="dropdown-toggle btn "
+                  data-toggle="dropdown"
+                  data-previous-answer="{{ participation.answer|default:"NONE" }}"
+                  aria-expanded="false">
+          </button>
+          <form class="dropdown-menu answer_form form-check"
+                aria-labelledby="drop_answer_event-{{ event.pk }}"
+                data-initial-text="{{ participation.get_answer_display }}">
+            {% for answer, display in answer_choices %}
+              <label class="dropdown-item form-check-label"
+                     for="answer-{{ answer }}_event-{{ event.pk }}">
+                <input class="form-check-input" type="radio" name="answer" value="{{ answer }}"
+                       data-text="{{ display }}"
+                       id="answer-{{ answer }}_event-{{ event.pk }}"
+                    {% if answer == participation.answer %}
+                       checked="checked" {% endif %}>
+                <span>{{ display }}</span>
+              </label>
+            {% endfor %}
+            <input type="hidden" name="event" value="{{ event.pk }}">
+          </form>
+          </div>
+        {% endwith %}
+    </td>
+    {% for participation in event.other_participations %}
+      {# participants column #}
+      <td class="d-none d-md-table-cell align-middle bg-{{ participation.answer }}">
+        <span>{{ participation.get_answer_display }}</span>
+      </td>
+    {% endfor %}
+  </tr>
+{% endfor %}
+</tbody>
+</table>
+<button id="submit_answers" class="btn btn-lg btn-primary ml-1"
+        data-post-url="{% url 'participations:participate' %}">Envoyer mes réponses
+</button>
+<button id="reset_answers" class="btn btn-primary ml-1">Reset</button>
+</div>
+{% endblock %}
+{%  block js %}
+{{  block.super }}
+  <script src="{% static 'participations/js/view_planning.js' %}"></script>
+  <script src="{% static 'plannings/js/#copy_button.js' %}"></script>
+{% endblock %}
