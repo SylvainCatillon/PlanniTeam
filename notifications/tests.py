@@ -10,7 +10,6 @@ from plannings.utils import add_guests, update_guests
 from plannings.models import Planning, Event
 
 
-# TODO: class notif planning creation et class notif planning edition
 class NotificationsTestCase(TestCase):
     fixtures = ['users', 'plannings', 'participations']
 

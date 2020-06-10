@@ -18,7 +18,7 @@ class Participation(models.Model):
     answer_choices = [
         ('YES', _('Yes')),
         ('NO', _('No')),
-        ('MAYBE', 'Peut-être')  # TODO: gérer traduction
+        ('MAYBE', 'Peut-être')
     ]
     answer = models.CharField(max_length=5, choices=answer_choices)
 
@@ -26,8 +26,6 @@ class Participation(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['event', 'participant'],
                                     name='unique_participant_event'),
-            # TODO: CheckConstraint vérifiant que l'email de l'user est dans
-            #  la guest_mail du planning de l'event
         ]
         ordering = ['participant__first_name']
 

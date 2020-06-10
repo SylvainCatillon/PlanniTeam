@@ -1,4 +1,3 @@
-#  TODO: Voir prefetch_related pour optimisation.
 def prepare_events(events, user, other_participants):
     """Prepare the events to be displayed, by adding some information."""
     for event in events:

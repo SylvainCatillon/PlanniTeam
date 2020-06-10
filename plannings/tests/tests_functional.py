@@ -30,7 +30,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
 
         # Set the cookies to fake a user login
         self.client.force_login(
-            self.user)  # TODO: Créer une fonction login dans utils
+            self.user)
         cookie = self.client.cookies['sessionid']
         # 404 page are the quickest to load
         self.driver.get(
@@ -51,8 +51,6 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
 
         self.assertIn('created', self.driver.current_url)
         self.assertTrue(self.user.planning_created.count())
-        # TODO: verifier le planning avec l'ekey si elle est
-        #  transmise en argument dans le lien
 
     @tag('selenium')
     def test_create_maximal_planning(self):
@@ -120,7 +118,7 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
             'planning_ekey': self.planning.ekey})
 
         # Set the cookies to fake a user login
-        self.client.force_login(self.user)  # TODO: Créer une fonction login dans utils
+        self.client.force_login(self.user)
         cookie = self.client.cookies['sessionid']
         # 404 page are the quickest to load
         self.driver.get(
@@ -176,14 +174,12 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
             elem.clear()
             elem.send_keys(value)
         self.driver.find_element_by_id(event1_prefix + 'validate').click()
-        # TODO: tester contenu de la carte
 
         # Delete the second event
         self.driver.find_element_by_id(
             event2_prefix + 'event_dropdown').click()
         self.driver.find_element_by_id(event2_prefix + 'DELETE').click()
         self.driver.find_element_by_id(event2_prefix + 'validate').click()
-        # TODO: tester contenu de la carte
 
         # Send the form
         self.driver.find_element_by_id('planning_submit').click()
@@ -244,8 +240,6 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
 
         # Add event1
         self.add_event(event1_attrs)
-        # TODO: tester contenu de la carte
-        # TODO: tester reset add form
 
         # Add event2 then modify it
         self.add_event({'date': event2_date})

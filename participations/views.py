@@ -15,10 +15,9 @@ from plannings.models import Planning, Event
 def participate(request):
     """Update the participations of a user. Takes only POST requests."""
     if not request.user.is_authenticated:
-        return HttpResponse('Veuillez vous connecter', status=401)  # TODO: changer erreur code? 403?
+        return HttpResponse('Veuillez vous connecter', status=401)
     for json_part in request.POST.getlist('participation'):
         participation = loads(json_part)
-        # TODO: Use block atomic?
         answer = participation.get('answer')
         if answer:
             event = Event.objects.get(pk=participation['event'])
@@ -32,8 +31,6 @@ def participate(request):
     return HttpResponse('Votre participation est enregistrée')
 
 
-# TODO:
-#   -custom message instead of 404 if the planning doesn't exist
 @login_required
 def view_planning(request, planning_ekey):
     """View to display a planning."""
