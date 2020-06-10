@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, date, time
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import tag
@@ -59,16 +59,18 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         self.assertFalse(self.user.planning_created.count())
         planning_name = 'Test'
         guest_email = 'guest@test.com'
-        event_data = {'date': '2020-01-01',
-                      'time': '12:12:00',
+        event_data = {'date': date(2020, 1, 1),
+                      'time': time(20, 30),
                       'description': 'This is a description',
                       'address': '2 boulevard something, 75003 Paris'}
+        event_fields = dict(event_data)
+        event_fields['date'] = event_fields['date'].strftime('%Y-%m-%d')
+        event_fields['time'] = event_fields['time'].strftime('%H:%M')
         prefix = 'id_event_set-__prefix__-'
-        name_list = ['id_name', 'id_protected', 'add_guest_input',
-                     'add_guest_submit']
-        for name in ['event_dropdown', 'date', 'time', 'description',
-                     'address', 'validate']:
-            name_list.append(prefix+name)
+        name_list = [
+            'id_name', 'id_protected', 'add_guest_input',
+            'add_guest_submit', prefix + 'event_dropdown', prefix + 'validate'
+        ]
         self.driver.get(self.path)
 
         elms = [self.driver.find_element_by_id(name) for name in name_list]
@@ -78,11 +80,10 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         elms[2].send_keys(guest_email)
         elms[3].click()
         elms[4].click()
-        elms[5].send_keys(event_data['date'])
-        elms[6].send_keys(event_data['time'])
-        elms[7].send_keys(event_data['description'])
-        elms[8].send_keys(event_data['address']) # Todo: factoriser
-        elms[9].click()
+        for field, data in event_fields.items():
+            elm = self.driver.find_element_by_id(prefix + field)
+            elm.send_keys(data)
+        elms[5].click()
 
         self.driver.find_element_by_id('planning_submit').click()
 
@@ -95,7 +96,7 @@ class TestFunctionalPlanningCreation(StaticLiveServerTestCase):
         self.assertIn(guest_email, planning.get_guest_emails)
         event = planning.event_set.first()
         for key, value in event_data.items():
-            self.assertEqual(value, str(getattr(event, key)))
+            self.assertEqual(value, getattr(event, key))
 
 
 class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
@@ -157,8 +158,8 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
             'address': event1.address+'TEST'
         }
         send_attrs = dict(new_attrs)
-        for elem in ['date', 'time']:
-            send_attrs[elem] = send_attrs[elem].isoformat()
+        send_attrs['date'] = send_attrs['date'].strftime('%Y-%m-%d')
+        send_attrs['time'] = send_attrs['time'].strftime('%H:%M')
         event1_prefix = "id_event_set-0-"
         event2_prefix = "id_event_set-1-"
 
@@ -192,6 +193,39 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
         for key, value in new_attrs.items():
             self.assertEqual(value, getattr(event1, key))
         self.assertEqual(old_count-1, self.planning.event_set.count())
+
+    @tag('selenium')
+    def test_unvalidated_modifications_are_not_saved(self):
+        # Set the elements of test
+        event = self.planning.event_set.first()
+        new_attrs = {
+            'date': event.date + timedelta(1),
+            'time': event.time.replace(minute=event.time.minute + 1),
+            'description': event.description + 'TEST',
+            'address': event.address + 'TEST'
+        }
+        send_attrs = dict(new_attrs)
+        send_attrs['date'] = send_attrs['date'].strftime('%Y-%m-%d')
+        send_attrs['time'] = send_attrs['time'].strftime('%H:%M')
+        event_prefix = "id_event_set-0-"
+
+        self.driver.get(self.path)
+
+        # Modify the first event but don't click on 'validate'
+        self.driver.find_element_by_id(
+            event_prefix + 'event_dropdown').click()
+        for key, value in send_attrs.items():
+            elem = self.driver.find_element_by_id(event_prefix + key)
+            elem.clear()
+            elem.send_keys(value)
+
+        # Send the form
+        self.driver.find_element_by_id('planning_submit').click()
+
+        # Test the event data haven't changed
+        event.refresh_from_db()
+        for key, value in new_attrs.items():
+            self.assertNotEqual(value, getattr(event, key))
 
     @tag('selenium')
     def test_add_events(self):

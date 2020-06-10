@@ -4,6 +4,7 @@
 {% block content %}
 
 <div class="container">
+
 <div id="intro" class="mb-2 p-1">
 <button id="intro_collapse_button" class="btn btn-sm float-right" type="button"
         data-toggle="collapse" data-target="#intro_text" aria-expanded="false"
@@ -12,63 +13,35 @@
   </button>
   <div id="intro_text" class="collapse show">
     <h3 class="text-center">Bienvenue sur la création du planning!</h3>
-    <p>Après avoir donné un nom à votre planning, vous pouvez y ajouter des
-      événements, ou créer votre planning sans événements.</p>
     <p>Vous pouvez choisir de restreindre l'accès au planning aux personnes
       dont vous aurez indiqué l'e-mail, ou de laisser le planning accessible à
       toute personne possédant le lien.
       Dans tous les cas, le lien du planning vous sera affiché une fois la
       création terminée.</p>
-    <p>Une fois votre planning créé, vous pourrez à tout moment le modifier</p>
+    <p>Vous pouvez soit ajouter des événements dès maintenant, soit créer votre
+    planning sans événements dans un premier temps.</p>
+    <p>Une fois votre planning créé, vous pourrez à tout moment le modifier.</p>
   </div>
 </div>
 
 <form id="planning_form" method="post" action="{{ form_url }}">
   {% csrf_token %}
   {{ event_formset.management_form }}
+  {% for hidden in planning_form.hidden_fields %}
+    {{ hidden }}
+  {% endfor %}
+  {% for email in planning_form.instance.guest_emails.all %}
+    <input type="hidden" value="{{ email }}" name="guest_email">
+  {% endfor %}
+
   <div class="form-group">
     <label class="sr-only">{{ planning_form.name.label_tag }}</label>
     {% render_field planning_form.name class+="form-control" placeholder=planning_form.name.label %}
   </div>
 
-  <br>
-
-  {% with form=event_formset.empty_form %}
-    <div id="add_event_container dropdown">
-    {% include 'plannings/event_form.html' with button_text='Ajouter un événement' hide_delete=True %}
-    </div>
-    <div id="model_event_card" style="display: none">
-      {% include 'plannings/event_card.html' with display_form=false %}
-    </div>
-  {% endwith %}
-
-  <div id="created_events_container"
-       class="bg-light row my-3 rounded overflow-auto
-       row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5"
-  >
-    {% for form in event_formset.forms %}
-    {% include 'plannings/event_card.html' with display_form=True button_text='Modifier' %}
-    {% endfor %}
-  </div>
-
-  <div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use modal instead? #}
-    <button type="button" class="close" data-dismiss="alert">x</button>
-    <strong>Succès! </strong> Les informations sont valides.
-  </div>
-
-  <br>
-
   <div class="form-group form-check">
     {% include 'core/form_field.html' with field=planning_form.protected %}
   </div>
-
-  {% for hidden in planning_form.hidden_fields %}
-    {{ hidden }}
-  {% endfor %}
-
-  {% for email in planning_form.instance.guest_emails.all %}
-    <input type="hidden" value="{{ email }}" name="guest_email">
-  {% endfor %}
 </form>
 
 <div id="edit_guests_container"
@@ -122,6 +95,31 @@
       </div>
     </div>
   </div>
+</div>
+
+<br>
+
+{% with form=event_formset.empty_form %}
+  <div id="add_event_container dropdown">
+  {% include 'plannings/event_form.html' with button_text='Ajouter un événement' hide_delete=True %}
+  </div>
+  <div id="model_event_card" style="display: none">
+    {% include 'plannings/event_card.html' with display_form=false %}
+  </div>
+{% endwith %}
+
+<div id="created_events_container"
+     class="bg-light row my-3 rounded overflow-auto
+     row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5"
+>
+  {% for form in event_formset.forms %}
+  {% include 'plannings/event_card.html' with display_form=True button_text='Modifier' %}
+  {% endfor %}
+</div>
+
+<div class="alert alert-success" id="success_alert" style="display: none"> {# TODO: use modal instead? #}
+  <button type="button" class="close" data-dismiss="alert">x</button>
+  <strong>Succès! </strong> Les informations sont valides.
 </div>
 
 <br>
