@@ -59,4 +59,3 @@ class TestFunctionalAccounts(StaticLiveServerTestCase):
         self.assertURLEqual(redirect_url, self.driver.current_url)
         body = self.driver.find_element_by_tag_name('body')
         self.assertIn(self.user_info['first_name'], body.text)
-

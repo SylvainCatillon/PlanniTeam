@@ -1,5 +1,6 @@
-from django.test import TestCase
 from datetime import date, time
+
+from django.test import TestCase
 
 from accounts.models import User
 from plannings.models import Planning, Event

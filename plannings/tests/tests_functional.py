@@ -270,7 +270,7 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
             created_event_prefix + 'event_dropdown').click()
         self.driver.find_element_by_id(
             created_event_prefix + 'description').send_keys(
-            event3_modified_description)
+                event3_modified_description)
         self.driver.find_element_by_id(
             created_event_prefix + 'validate').click()
 
@@ -322,4 +322,3 @@ class TestFunctionalPlanningEdition(StaticLiveServerTestCase):
         self.assertNotIn(email_to_delete, new_guests)
         self.assertNotIn(email_to_add_then_delete, new_guests)
         self.assertIn(email_to_add, new_guests)
-

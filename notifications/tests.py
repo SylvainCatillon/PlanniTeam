@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.core import mail
 from django.contrib.auth import get_user_model
 
-from notifications.Notifier import Notifier
+from notifications.notifier import Notifier
 from plannings.forms import EventInlineFormSet
 from plannings.utils import add_guests, update_guests
 from plannings.models import Planning, Event
@@ -33,14 +33,14 @@ class NotificationsTestCase(TestCase):
         add_guests(planning, guest_emails)
 
         self.assertEqual(len(guest_emails), len(mail.outbox))
-        for Email in mail.outbox:
-            self.assertEqual(1, len(Email.to))
-            email = Email.to[0]
-            self.assertIn(email, guest_emails)
+        for email in mail.outbox:
+            self.assertEqual(1, len(email.to))
+            receiver = email.to[0]
+            self.assertIn(receiver, guest_emails)
             # Assert that the name of the participant is in the message
-            if email == self.participant.email:
-                self.assertIn(self.participant.first_name, Email.body)
-            guest_emails.remove(email)
+            if receiver == self.participant.email:
+                self.assertIn(self.participant.first_name, email.body)
+            guest_emails.remove(receiver)
         # Assert that all the guests' emails have been found
         self.assertEqual(len(guest_emails), 0)
 

@@ -1,7 +1,8 @@
 from django.contrib import admin
 
-from .models import Planning, Event, GuestEmail
 from participations.models import Participation
+
+from plannings.models import Planning, Event, GuestEmail
 
 
 class ParticipationInline(admin.TabularInline):

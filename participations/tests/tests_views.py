@@ -29,6 +29,11 @@ class DisplayViewTestCase(TestCase):
             response,
             f'/accounts/login/?next=/participations/view/{self.key}/')
 
+    def test_inexistant_planning(self):
+        response = self.client.get(reverse('participations:view', kwargs={
+            'planning_ekey': "fakeEkey"}))
+        self.assertEqual(response.status_code, 404)
+
     def test_get_page_by_url(self):
         response = self.client.get(
             f'/participations/view/{self.key}/')
@@ -45,8 +50,6 @@ class DisplayViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response,
                                 'participations/view_planning.html')
-
-    # TODO test_inexistant_planning
 
     def test_creator_can_access_protected_planning(self):
         creator = User.objects.get(first_name='Creator')

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from notifications.Notifier import Notifier
+from notifications.notifier import Notifier
 from plannings.forms import PlanningCreationForm, EventCreationForm, \
     EventInlineFormSet
 from plannings.models import Planning
@@ -59,8 +59,7 @@ def check_event(request):
     form = EventCreationForm(request.POST)
     if form.is_valid():
         return HttpResponse("Les informations sont valides")
-    else:
-        return HttpResponse(form.errors.as_json(), status=422)
+    return HttpResponse(form.errors.as_json(), status=422)
 
 
 def planning_created(request, planning_ekey):
