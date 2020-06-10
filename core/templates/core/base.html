@@ -21,7 +21,13 @@
  {% include 'core/nav.html' %}
 {% endblock %}
 
+<section class="min-vh-100">
 {%  block content %}
+{% endblock %}
+</section>
+
+{% block footer %}
+ {% include 'core/footer.html' %}
 {% endblock %}
 
 {% block js %}
