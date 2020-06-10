@@ -1,4 +1,4 @@
-#PlanniTeam, team planning
+# PlanniTeam, team planning
 With PlanniTeam, you can create a schedule with events, and ask your teammates 
 to indicate their participation.
 
@@ -20,7 +20,7 @@ The users participating in a planning can:
 * See the exact answers of other participants
 * Edit their previous answer
 
-####PlanniTeam is online (in french) at https://planniteam.herokuapp.com/
+#### PlanniTeam is online (in french) at https://planniteam.herokuapp.com/
 
 If you install this application localy, you have to define the following environment
  variables:
