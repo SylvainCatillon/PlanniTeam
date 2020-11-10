@@ -31,14 +31,15 @@ class Notifier:
             data = []
             subject = texts['subject'].format(planning_name=self.planning_name)
             message = texts['base_message']
-            for row in [(added, texts["added"]), (modified, texts["modified"]),
-                        (deleted, texts["deleted"])]:
-                events = row[0]
+            events_per_action = [(added, texts["added"]),
+                                 (modified, texts["modified"]),
+                                 (deleted, texts["deleted"])]
+            for events, action_text in events_per_action:
                 if events:
                     dates = [event.date.strftime("%d/%m/%Y")
                              for event in events]
                     events_str = ", ".join(dates)
-                    message += texts['event_row'].format(type=row[1],
+                    message += texts['event_row'].format(action=action_text,
                                                          events=events_str)
 
             for user in participants:

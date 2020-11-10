@@ -17,5 +17,5 @@ events_changes_texts = dict(
     added="ajoutés",
     modified="modifiés",
     deleted="supprimés",
-    event_row="\nLes événements suivants ont été {type}: {events}.",
+    event_row="\nLes événements suivants ont été {action}: {events}.",
 )
