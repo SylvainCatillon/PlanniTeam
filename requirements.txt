@@ -1,6 +1,6 @@
 asgiref==3.2.7
 coverage==5.1
-Django==3.0.7
+Django==3.1.9
 django-encrypted-id @ git+https://github.com/amitu/django-encrypted-id.git@21142918f2f35162f2f45bdbcd344680761d1a10
 django-widget-tweaks==1.4.8
 gunicorn==20.0.4
